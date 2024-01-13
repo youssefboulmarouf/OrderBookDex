@@ -1,0 +1,33 @@
+{
+  "name": "orderbookdex",
+  "version": "1.0.0",
+  "description": "Order Book Decentralized Exchange",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youssefboulmarouf/OrderBookDex.git"
+  },
+  "keywords": [],
+  "author": "Youssef Boulmarouf",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/youssefboulmarouf/OrderBookDex/issues"
+  },
+  "homepage": "https://github.com/youssefboulmarouf/OrderBookDex#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.3",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.0.1",
+    "chai": "^4.4.1",
+    "hardhat": "^2.19.4"
+  },
+  "dependencies": {
+    "@ethersproject/abi": "^5.7.0",
+    "@ethersproject/providers": "^5.7.2",
+    "ether": "^0.0.9"
+  }
+}
