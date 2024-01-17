@@ -24,7 +24,6 @@ describe('OBDex', () => {
     }
 
     describe('Token Tests', () => {
-
         async function tokenFixture() {
             const orderBookDex = await deployOrderBookContract();
             const daiToken = await deployTokenTest("Dai Stable Coin", "DAI");
@@ -42,7 +41,7 @@ describe('OBDex', () => {
             return { orderBookDex, daiToken, zrxToken, owner, otherAccount };
         }
         
-        it("Should Have Correct Tokens", async () => {
+        it('Should Have Correct Tokens', async () => {
             const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
             const tokens = await orderBookDex.contract.getTokens();
 
@@ -54,7 +53,7 @@ describe('OBDex', () => {
             expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
         });
         
-        it("Should Add Token If Admin", async () => {
+        it('Should Add Token If Admin', async () => {
             const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
             
             const daiDetails = await getContractDetails(daiToken.contract);
@@ -63,7 +62,10 @@ describe('OBDex', () => {
             await orderBookDex
                 .contract
                 .connect(owner)
-                .addToken(ethers.encodeBytes32String(zrxDetails.symbol), zrxDetails.address);
+                .addToken(
+                    ethers.encodeBytes32String(zrxDetails.symbol), 
+                    zrxDetails.address
+                );
 
             const tokens = await orderBookDex.contract.getTokens();
 
@@ -76,7 +78,7 @@ describe('OBDex', () => {
             expect(tokens[1].tokenAddress).to.be.equals(zrxDetails.address);
         });
 
-        it("Should Have Correct Tickers", async () => {
+        it('Should Have Correct Tickers', async () => {
             const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
             
             const daiDetails = await getContractDetails(daiToken.contract);
@@ -94,7 +96,7 @@ describe('OBDex', () => {
             expect(tickerList[1]).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
         });
 
-        it("Should NOT Add Token If NOT Admin", async () => {
+        it('Should NOT Add Token If NOT Admin', async () => {
             const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
             
             const zrxDetails = await getContractDetails(zrxToken.contract);
@@ -107,10 +109,11 @@ describe('OBDex', () => {
             ).to.be.revertedWith('Unauthorized!');
         });
 
-        it("Should NOT Add Same Token Twice", async () => {
+        it('Should NOT Add Same Token Twice', async () => {
             const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
             
-            const daiDetails = await getContractDetails(daiToken.contract);
+            const 
+            daiDetails = await getContractDetails(daiToken.contract);
             
             await expect(
                 orderBookDex
@@ -120,4 +123,88 @@ describe('OBDex', () => {
             ).to.be.revertedWith('Ticker Exists!');
         });
     }); 
+
+    describe('Deposit Balance', () => {
+        async function depositFixture() {
+            const orderBookDex = await deployOrderBookContract();
+            const daiToken = await deployTokenTest("Dai Stable Coin", "DAI");
+
+            const [owner, trader] = await ethers.getSigners();
+
+            const daiDetails = await getContractDetails(daiToken.contract);
+            
+            await orderBookDex
+                .contract
+                .connect(owner)
+                .addToken(
+                    ethers.encodeBytes32String(daiDetails.symbol), 
+                    daiDetails.address
+                );
+            
+            return { orderBookDex, daiToken, owner, trader };
+        }
+
+        it('Should deposit if token exists',async () => {
+            const { orderBookDex, daiToken, owner, trader } = await loadFixture(depositFixture);
+
+            const orderBookDexAddress = await orderBookDex.contract.getAddress();
+            const daiDetails = await getContractDetails(daiToken.contract);
+            
+            const amountDeposit = ethers.parseUnits('1', 'ether');
+
+            // Mint token for trader
+            await daiToken
+                .contract
+                .faucet(trader.address, amountDeposit);
+            
+            // Assert minting amount of token for trader
+            const traderDaiBalanceBefore = await daiToken.contract.balanceOf(trader);
+            expect(traderDaiBalanceBefore).to.be.equals(amountDeposit);
+            
+            // Approve DEX to spend tokens for trader
+            await daiToken
+                .contract
+                .connect(trader)
+                .approve(orderBookDexAddress, amountDeposit);
+
+            // Deposit balance of amount in trader balance
+            await orderBookDex
+                .contract
+                .connect(trader)
+                .deposit(
+                    ethers.encodeBytes32String(daiDetails.symbol),
+                    amountDeposit
+                );
+
+            // Assert minted amount aftre deposit
+            const traderDaiBalanceAfter = await daiToken.contract.balanceOf(trader);
+            expect(traderDaiBalanceAfter).to.be.equals(0);
+
+            const traderBalance = await orderBookDex
+                .contract
+                .balances(
+                    trader.address,
+                    ethers.encodeBytes32String(daiDetails.symbol)
+                );
+            
+            // Assert trader balance in DEX
+            expect(traderBalance.free).to.be.equal(amountDeposit);
+            expect(traderBalance.locked).to.be.equal(0);
+        });
+
+        it('Should NOT deposit if token does NOT exists',async () => {
+            const { orderBookDex, daiToken, owner, trader } = await loadFixture(depositFixture);
+            const amountDeposit = ethers.parseUnits('1', 'ether');
+
+            await expect(
+                orderBookDex
+                    .contract
+                    .connect(trader)
+                    .deposit(
+                        ethers.encodeBytes32String('NON EXISTING TOKEN'),
+                        amountDeposit
+                    )
+            ).to.be.revertedWith('Ticker Does Not Exist!');
+        });
+    });
 });
