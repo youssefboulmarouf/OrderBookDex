@@ -28,6 +28,6 @@
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
-    "ether": "^0.0.9"
+    "ethers": "^5.7.2"
   }
 }
