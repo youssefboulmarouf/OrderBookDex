@@ -63,8 +63,7 @@ contract OrderBookDex {
 
         
     // --- Withdraw Tokens ---
-    function withdraw(bytes32 _ticker, uint _amount) 
-        external tokenExist(_ticker) hasEnoughBalance(_ticker, _amount) {
+    function withdraw(bytes32 _ticker, uint _amount) external tokenExist(_ticker) hasEnoughBalance(_ticker, _amount) {
 
         IERC20 token = IERC20(tokens[_ticker].tokenAddress);
         balances[msg.sender][_ticker].free = balances[msg.sender][_ticker].free - _amount;
