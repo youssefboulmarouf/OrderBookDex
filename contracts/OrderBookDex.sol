@@ -61,6 +61,16 @@ contract OrderBookDex {
         balances[msg.sender][_ticker].free = balances[msg.sender][_ticker].free + _amount;
     }
 
+        
+    // --- Withdraw Tokens ---
+    function withdraw(bytes32 _ticker, uint _amount) 
+        external tokenExist(_ticker) hasEnoughBalance(_ticker, _amount) {
+
+        IERC20 token = IERC20(tokens[_ticker].tokenAddress);
+        balances[msg.sender][_ticker].free = balances[msg.sender][_ticker].free - _amount;
+        token.transfer(msg.sender, _amount);
+    }
+
     // --- Modifier: Admin Access Controle ---
     modifier onlyAdmin() {
         require(admin == msg.sender, "Unauthorized!");
@@ -76,6 +86,12 @@ contract OrderBookDex {
     // --- Modifier: Token Should Exist ---
     modifier tokenExist(bytes32 _ticker) {
         require(tokens[_ticker].tokenAddress != address(0), "Ticker Does Not Exist!");
+        _;
+    }
+
+    // --- Modifier: Trader Should Have Enough Balance For Action ---
+    modifier hasEnoughBalance(bytes32 _ticker, uint _amount) {
+        require(balances[msg.sender][_ticker].free >= _amount, "Low Balance!");
         _;
     }
 }
