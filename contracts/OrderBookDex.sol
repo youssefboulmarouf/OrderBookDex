@@ -8,6 +8,7 @@ contract OrderBookDex {
     struct Token { 
         bytes32 ticker; // Ticker of the token to be traded
         address tokenAddress; // Address of the token
+        bool isTradable;
     }
 
     // --- Structs ---
@@ -27,7 +28,7 @@ contract OrderBookDex {
     constructor() { admin = msg.sender; }
 
     function addToken(bytes32 _ticker, address _tokenAddress) external onlyAdmin() tokenDoesNotExist(_ticker) {
-        tokens[_ticker] = Token(_ticker, _tokenAddress); 
+        tokens[_ticker] = Token(_ticker, _tokenAddress, true); 
         tickerList.push(_ticker);
     }
 
@@ -43,7 +44,8 @@ contract OrderBookDex {
         for (uint i = 0; i < tickerList.length; i++) {
             bytes32 currentTicker = tickerList[i];
             address tokenAddress = tokens[currentTicker].tokenAddress;
-            _tokens[i] = Token(currentTicker, tokenAddress);
+            bool isTradable = tokens[currentTicker].isTradable;
+            _tokens[i] = Token(currentTicker, tokenAddress, isTradable);
         }
 
         return _tokens;
@@ -52,6 +54,16 @@ contract OrderBookDex {
     // --- Get Ticker List ---
     function getTickerList() external view returns(bytes32[] memory) {
         return tickerList;
+    }
+
+    // --- disable Trading For A Given Token ---
+    function disableTokenTrading(bytes32 _ticker) external onlyAdmin() tokenExist(_ticker) tokenEnabled(_ticker) {
+        tokens[_ticker].isTradable = false;
+    }
+
+    // --- Enable Trading For A Given Token ---
+    function enableTokenTrading(bytes32 _ticker) external onlyAdmin() tokenExist(_ticker) tokenDisabled(_ticker) {
+        tokens[_ticker].isTradable = true;
     }
 
     // --- Deposit Tokens ---
@@ -85,6 +97,18 @@ contract OrderBookDex {
     // --- Modifier: Token Should Exist ---
     modifier tokenExist(bytes32 _ticker) {
         require(tokens[_ticker].tokenAddress != address(0), "Ticker Does Not Exist!");
+        _;
+    }
+
+    // --- Modifier: Token Should Be Disabled ---
+    modifier tokenDisabled(bytes32 _ticker) {
+        require(tokens[_ticker].isTradable == false, "Token Enabled!");
+        _;
+    }
+
+    // --- Modifier: Token Should Be Enabled ---
+    modifier tokenEnabled(bytes32 _ticker) {
+        require(tokens[_ticker].isTradable == true, "Token Disabled!");
         _;
     }
 
