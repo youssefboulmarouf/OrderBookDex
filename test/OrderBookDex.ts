@@ -33,6 +33,7 @@ describe('OBDex', () => {
 
             const daiDetails = await getContractDetails(daiToken.contract);
             
+            // Add DAI tokken to OBDEX
             await orderBookDex
                 .contract
                 .connect(owner)
@@ -51,6 +52,7 @@ describe('OBDex', () => {
             // assert DAI Token that was add in the fixture
             expect(tokens[0].ticker).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
             expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
+            expect(tokens[0].isTradable).to.be.equals(true);
         });
         
         it('Should Add Token If Admin', async () => {
@@ -73,9 +75,43 @@ describe('OBDex', () => {
             // assert DAI Token that was add in the fixture
             expect(tokens[0].ticker).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
             expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
+            expect(tokens[0].isTradable).to.be.equals(true);
             // assert ZRX Token that was add in the the test
             expect(tokens[1].ticker).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
             expect(tokens[1].tokenAddress).to.be.equals(zrxDetails.address);
+            expect(tokens[1].isTradable).to.be.equals(true);
+        });
+
+        it('Should Disable & Enable Token If Admin', async () => {
+            const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
+
+            const daiDetails = await getContractDetails(daiToken.contract);
+
+            await orderBookDex
+                .contract
+                .connect(owner)
+                .disableTokenTrading(ethers.encodeBytes32String(daiDetails.symbol));
+
+            let tokens = await orderBookDex.contract.getTokens();
+
+            expect(tokens.length).to.be.equals(1);
+            // assert DAI Token that was add in the fixture
+            expect(tokens[0].ticker).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
+            expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
+            expect(tokens[0].isTradable).to.be.equals(false);
+
+            await orderBookDex
+                .contract
+                .connect(owner)
+                .enableTokenTrading(ethers.encodeBytes32String(daiDetails.symbol));
+
+            tokens = await orderBookDex.contract.getTokens();
+
+            expect(tokens.length).to.be.equals(1);
+            // assert DAI Token that was add in the fixture
+            expect(tokens[0].ticker).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
+            expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
+            expect(tokens[0].isTradable).to.be.equals(true);
         });
 
         it('Should Have Correct Tickers', async () => {
@@ -94,6 +130,65 @@ describe('OBDex', () => {
             expect(tickerList.length).to.be.equals(2);
             expect(tickerList[0]).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
             expect(tickerList[1]).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
+        });
+
+        it('Should NOT Disable Token If Already Disabled', async () => {
+            const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
+
+            const daiDetails = await getContractDetails(daiToken.contract);
+
+            await orderBookDex
+                .contract
+                .connect(owner)
+                .disableTokenTrading(ethers.encodeBytes32String(daiDetails.symbol));
+
+            let tokens = await orderBookDex.contract.getTokens();
+
+            expect(tokens.length).to.be.equals(1);
+            // assert DAI Token that was add in the fixture
+            expect(tokens[0].ticker).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
+            expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
+            expect(tokens[0].isTradable).to.be.equals(false);
+
+            await expect(
+                orderBookDex
+                    .contract
+                    .connect(owner)
+                    .disableTokenTrading(ethers.encodeBytes32String(daiDetails.symbol))
+            ).to.be.revertedWith('Token Disabled!');
+        });
+
+        it('Should NOT Enable Token If Already Enabled', async () => {
+            const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
+
+            const daiDetails = await getContractDetails(daiToken.contract);
+
+            await expect(
+                orderBookDex
+                    .contract
+                    .connect(owner)
+                    .enableTokenTrading(ethers.encodeBytes32String(daiDetails.symbol))
+            ).to.be.revertedWith('Token Enabled!');
+        });
+
+        it('Should NOT Enable Or Disable Token If NOT Admin', async () => {
+            const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
+
+            const daiDetails = await getContractDetails(daiToken.contract);
+
+            await expect(
+                orderBookDex
+                    .contract
+                    .connect(otherAccount)
+                    .enableTokenTrading(ethers.encodeBytes32String(daiDetails.symbol))
+            ).to.be.revertedWith('Unauthorized!');
+
+            await expect(
+                orderBookDex
+                    .contract
+                    .connect(otherAccount)
+                    .disableTokenTrading(ethers.encodeBytes32String(daiDetails.symbol))
+            ).to.be.revertedWith('Unauthorized!');
         });
 
         it('Should NOT Add Token If NOT Admin', async () => {
