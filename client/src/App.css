@@ -36,3 +36,30 @@
     transform: rotate(360deg);
   }
 }
+
+.navbar-style {
+  margin: 5px; 
+  border-radius: 10px;
+}
+
+.default-box-layout {
+  margin: 5px;
+  border-radius: 10px; 
+  background-color: gray;
+}
+
+.place-order {
+  height: 91vh;
+}
+
+.chart { 
+  height: 60vh;
+}
+
+.trades {
+  height: 30vh;
+}
+
+.order-book { 
+  height: 60vh;
+}
