@@ -1,6 +1,8 @@
+import './trades.css';
+
 function Trades() {
     return (
-        <div className="default-box-layout">TRADES</div>
+        <div className="default-box-layout trades">TRADES</div>
     );
 }
 
