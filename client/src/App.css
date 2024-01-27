@@ -11,6 +11,11 @@
   border-radius: 10px;
 }
 
+.navbar-style {
+  margin: 5px; 
+  border-radius: 10px;
+}
+
 .default-box-layout {
   margin: 5px;
   border-radius: 10px; 
