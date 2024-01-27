@@ -1,56 +1,39 @@
 import { Container } from 'react-bootstrap';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
+import NavBar from './components/navbar/NavBar';
+import Markets from './components/markets/Markets';
+import UserWallet from './components/user-wallet/UserWallet';
+import OrderBook from './components/order-book/OrderBook';
+import Chart from './components/chart/Chart';
+import Trades from './components/trades/Trades';
+import PlaceOrder from './components/place-order/PlaceOrder';
+
 function App() {
   return (
         <Container fluid className="App">
-            <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className="navbar-style">
-                <Container fluid>
-                    <Navbar.Brand href="#home">OrderBookDEX</Navbar.Brand>
-                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                    <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav className="me-auto">
-                            <Nav.Link href="">Home</Nav.Link>
-                            <Nav.Link href="">Admin</Nav.Link>
-                        </Nav>
-                        <div className="ms-auto">
-                            <Button variant="warning">Connect Wallet</Button>
-                        </div>
-                    </Navbar.Collapse>
-                </Container>
-            </Navbar>
+            <NavBar />
             <Row>
                 <Col sm={3}>
-                    <div className="default-box-layout place-order">
-                        <div className='title-box'>PLACE ORDER</div>
-                    </div>
+                    <Markets />      
+                    <UserWallet />
+                </Col>
+                <Col sm={3}>
+                    <OrderBook />
+                </Col>
+                <Col sm={6}>
+                    <Chart />
+                </Col>
+            </Row>
+            <Row>
+                <Col sm={3}>
+                    <PlaceOrder />
                 </Col>
                 <Col sm={9}>
-                    <Row>
-                        <Col sm={4}>
-                            <div className="default-box-layout order-book">
-                                    <div className='title-box'>ALL TRADES & ORDER BOOK</div>
-                            </div>
-                        </Col>
-                        <Col sm={8}>
-                            <div className="default-box-layout chart">
-                                <div className='title-box'>CHART</div>
-                            </div>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            <div className="default-box-layout trades">
-                                <div className='title-box'>MY TRADES</div>
-                            </div>
-                        </Col>
-                    </Row>
+                    <Trades />
                 </Col>
             </Row>
         </Container>
