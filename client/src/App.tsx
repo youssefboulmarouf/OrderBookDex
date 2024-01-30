@@ -19,7 +19,7 @@ function App() {
             <Row>
                 <Col sm={3}>
                     <Markets />      
-                    <UserWallet />
+                    <PlaceOrder />
                 </Col>
                 <Col sm={3}>
                     <OrderBook />
@@ -30,7 +30,7 @@ function App() {
             </Row>
             <Row>
                 <Col sm={3}>
-                    <PlaceOrder />
+                    <UserWallet />
                 </Col>
                 <Col sm={9}>
                     <Trades />
