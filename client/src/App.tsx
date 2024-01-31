@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+
 import { Container } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -11,11 +13,20 @@ import OrderBook from './components/order-book/OrderBook';
 import Chart from './components/chart/Chart';
 import Trades from './components/trades/Trades';
 import PlaceOrder from './components/place-order/PlaceOrder';
+import OrderBookDexContract from './services/OrderBookDexContract';
+import * as utils from './utils';
 
 function App() {
-  return (
+    const [orderBookDexContract, setOrderBookDexContract] = useState<OrderBookDexContract | null>(null);
+
+    const handleConnectWallet = async () => {
+        const provider = await utils.connectWallet();
+        //setOrderBookDexContract(new OrderBookDexContract(provider, "contractAddress"));
+    }
+
+    return (
         <Container fluid className="App">
-            <NavBar />
+            <NavBar connectWallet={handleConnectWallet}/>
             <Row>
                 <Col sm={3}>
                     <Markets />      
@@ -37,7 +48,7 @@ function App() {
                 </Col>
             </Row>
         </Container>
-  );
+    );
 }
 
 export default App;

@@ -5,7 +5,11 @@ import { Container } from 'react-bootstrap';
 import { GearFill } from 'react-bootstrap-icons';
 import AdminSection from '../admin-section/AdminSection';
 
-const NavBar: React.FC = () => {
+interface NavBarProps {
+    connectWallet: () => void;
+}
+
+const NavBar: React.FC<NavBarProps> = (props) => {
     const [showAdminSection, setshowAdminSection] = useState(false);
 
     const handleClose = () => setshowAdminSection(false);
@@ -24,7 +28,7 @@ const NavBar: React.FC = () => {
                 <Navbar.Toggle aria-controls='basic-navbar-nav' />
                 <Navbar.Collapse id='basic-navbar-nav'>
                     <div className='ms-auto'>
-                        <Button variant='warning'>Connect Wallet</Button>
+                        <Button variant='warning' onClick={props.connectWallet}>Connect Wallet</Button>
                     </div>
                 </Navbar.Collapse>
             </Container>
