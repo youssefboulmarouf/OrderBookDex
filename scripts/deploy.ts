@@ -1,22 +1,30 @@
 import { ethers } from "hardhat";
+import fs from 'fs';
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+    const daiToken = await ethers.deployContract("TestToken", ['Dai Stable Coin', 'DAI'])
+    await daiToken.waitForDeployment();
+    const daiAddress = await daiToken.getAddress();
 
-  const lockedAmount = ethers.parseEther("0.001");
+    const zrxToken = await ethers.deployContract("TestToken", ['Xero Token', 'ZRX'])
+    await zrxToken.waitForDeployment();
+    const zrxAddress = await zrxToken.getAddress();
 
-  const lock = await ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+    const orderBookDex = await ethers.deployContract("OrderBookDex");
+    await orderBookDex.waitForDeployment();
+    const orderBookDexAddress = await orderBookDex.getAddress();
 
-  await lock.waitForDeployment();
+    const adresses = {
+        OBDex: orderBookDexAddress,
+        dai: daiAddress,
+        zrx: zrxAddress
+    }
 
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+    fs.writeFileSync(
+        'client/src/contract-addresses.json', 
+        JSON.stringify({ adresses }), 
+        { flag: 'w' }
+    )
 }
 
 // We recommend this pattern to be able to use async/await everywhere
