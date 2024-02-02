@@ -1,3 +1,6 @@
+import React, { useState, useEffect } from 'react';
+import { ethers, Signer } from 'ethers';
+
 import { Container } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -11,15 +14,40 @@ import OrderBook from './components/order-book/OrderBook';
 import Chart from './components/chart/Chart';
 import Trades from './components/trades/Trades';
 import PlaceOrder from './components/place-order/PlaceOrder';
+import OrderBookDexContract from './services/OrderBookDexContract';
+import { TokenProps } from './components/common/common-props';
 
-function App() {
-  return (
+interface AppProps {
+    provider: ethers.providers.Web3Provider;
+    orderBookDexContract: OrderBookDexContract;
+    account: Signer;
+}
+
+const App: React.FC<AppProps> = (props) => {
+    const [tokens, setTokens] = useState<TokenProps[]>([]);
+
+    const loadTokens = async () => {
+        const allTokens: TokenProps[] = await props.orderBookDexContract.getAllTokens();
+        setTokens(allTokens);
+    };
+
+    useEffect(() => {
+        const initToken = async () => {
+            await loadTokens();
+        };
+        initToken();
+    }, []);
+
+    return (
         <Container fluid className="App">
-            <NavBar />
+            <NavBar 
+                account={props.account} 
+                orderBookDexContract={props.orderBookDexContract}
+            />
             <Row>
                 <Col sm={3}>
                     <Markets />      
-                    <UserWallet />
+                    <PlaceOrder />
                 </Col>
                 <Col sm={3}>
                     <OrderBook />
@@ -30,14 +58,14 @@ function App() {
             </Row>
             <Row>
                 <Col sm={3}>
-                    <PlaceOrder />
+                    <UserWallet />
                 </Col>
                 <Col sm={9}>
                     <Trades />
                 </Col>
             </Row>
         </Container>
-  );
+    );
 }
 
 export default App;
