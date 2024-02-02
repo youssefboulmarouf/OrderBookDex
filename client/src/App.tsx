@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ethers, Signer } from 'ethers';
 
 import { Container } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
@@ -14,19 +15,35 @@ import Chart from './components/chart/Chart';
 import Trades from './components/trades/Trades';
 import PlaceOrder from './components/place-order/PlaceOrder';
 import OrderBookDexContract from './services/OrderBookDexContract';
-import * as utils from './utils';
+import { TokenProps } from './components/common/common-props';
 
-function App() {
-    const [orderBookDexContract, setOrderBookDexContract] = useState<OrderBookDexContract | null>(null);
+interface AppProps {
+    provider: ethers.providers.Web3Provider;
+    orderBookDexContract: OrderBookDexContract;
+    account: Signer;
+}
 
-    const handleConnectWallet = async () => {
-        const provider = await utils.connectWallet();
-        //setOrderBookDexContract(new OrderBookDexContract(provider, "contractAddress"));
-    }
+const App: React.FC<AppProps> = (props) => {
+    const [tokens, setTokens] = useState<TokenProps[]>([]);
+
+    const loadTokens = async () => {
+        const allTokens: TokenProps[] = await props.orderBookDexContract.getAllTokens();
+        setTokens(allTokens);
+    };
+
+    useEffect(() => {
+        const initToken = async () => {
+            await loadTokens();
+        };
+        initToken();
+    }, []);
 
     return (
         <Container fluid className="App">
-            <NavBar connectWallet={handleConnectWallet}/>
+            <NavBar 
+                account={props.account} 
+                orderBookDexContract={props.orderBookDexContract}
+            />
             <Row>
                 <Col sm={3}>
                     <Markets />      
