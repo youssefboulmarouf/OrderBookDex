@@ -7,18 +7,12 @@ const connectWallet = async () => {
             return new ethers.providers.Web3Provider(window.ethereum);
         } catch (error) {
             console.error('Error connecting to MetaMask:', error);
-            console.log('Fallback to local network');
-            return connectToLocalNetwork();
+            throw error;
         }
     } else {
         console.error('MetaMask is not installed!');
-        console.log('Fallback to local network');
-        return connectToLocalNetwork();
+        throw 'MetaMask is not installed!';
     }
 };
 
-const connectToLocalNetwork = () => {
-    return new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
-}
-
-export { connectWallet, connectToLocalNetwork };
+export { connectWallet };
