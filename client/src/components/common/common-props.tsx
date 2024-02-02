@@ -1,6 +1,6 @@
 interface TokenProps {
     ticker: string;
-    address: string;
+    tokenAddress: string;
     isTradable: boolean;
 }
 
