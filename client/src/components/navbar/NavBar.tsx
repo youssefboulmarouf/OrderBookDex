@@ -15,9 +15,6 @@ interface NavBarProps {
 const NavBar: React.FC<NavBarProps> = (props) => {
     const [showAdminSection, setshowAdminSection] = useState(false);
 
-    const handleClose = () => setshowAdminSection(false);
-    const handleShow = () => setshowAdminSection(true);
-
     return (
         <>
         <Navbar bg='dark' variant='dark' expand='lg' sticky='top' className='navbar-style'>
@@ -26,7 +23,7 @@ const NavBar: React.FC<NavBarProps> = (props) => {
                 <Navbar.Toggle aria-controls='basic-navbar-nav' />
                 <Navbar.Collapse id='basic-navbar-nav'>
                     <div className='ms-auto'>
-                        <Button className='admin-button' variant='outline-secondary' onClick={handleShow}>
+                        <Button className='admin-button' variant='outline-secondary' onClick={() => setshowAdminSection(true)}>
                             <GearFill color='white' size={25}/>
                         </Button>
                     </div>
@@ -36,7 +33,7 @@ const NavBar: React.FC<NavBarProps> = (props) => {
 
         <AdminSection 
             showAdminSection={showAdminSection} 
-            handleClose={handleClose}
+            handleClose={() => setshowAdminSection(false)}
             account={props.account}
             orderBookDexContract={props.orderBookDexContract}
         />
