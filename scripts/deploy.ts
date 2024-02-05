@@ -1,15 +1,37 @@
 import { ethers } from "hardhat";
 import fs from 'fs';
+import { OrderBookDex, TestToken } from "../typechain-types";
+import { Signer } from "ethers";
+
+const deployToken = async (name: string, symbol: string): Promise<TestToken> => {
+    const token = await ethers.deployContract("TestToken", [name, symbol])
+    await token.waitForDeployment();
+    return token;
+}
+
+const seedAccount = async (orderBookDex: OrderBookDex, tokens: TestToken[], trader: Signer) => {
+    tokens.map(async token => {
+        const amountToMint =  ethers.parseUnits('1000', 'ether');
+
+        await token.faucet(trader, amountToMint);
+        const orderBookDexAddress = await orderBookDex.getAddress();
+        await token.connect(trader).approve(orderBookDexAddress, amountToMint);
+
+        const tokenName = await token.symbol();
+        const ticker = ethers.encodeBytes32String(tokenName);
+
+        const amountToDeposit =  ethers.parseUnits('250', 'ether');
+        await orderBookDex.connect(trader).deposit(ticker, amountToDeposit);
+    });
+}
 
 async function main() {
     // Deploy DAI Token
-    const daiToken = await ethers.deployContract("TestToken", ['Dai Stable Coin', 'DAI'])
-    await daiToken.waitForDeployment();
+    const daiToken: TestToken = await deployToken('Dai Stable Coin', 'DAI');
     const daiAddress = await daiToken.getAddress();
 
     // Deploy ZRX Token
-    const zrxToken = await ethers.deployContract("TestToken", ['Xero Token', 'ZRX'])
-    await zrxToken.waitForDeployment();
+    const zrxToken: TestToken = await deployToken('Xero Token', 'ZRX');
     const zrxAddress = await zrxToken.getAddress();
 
     // Deploy Order Book Dex
@@ -17,11 +39,14 @@ async function main() {
     await orderBookDex.waitForDeployment();
     const orderBookDexAddress = await orderBookDex.getAddress();
 
-    // Add DAI token
+    // Add DAI and ZRX tokens
     await orderBookDex.addToken(ethers.encodeBytes32String('DAI'), daiAddress);
-    
-    // Add ZRX token
     await orderBookDex.addToken(ethers.encodeBytes32String('ZRX'), zrxAddress);
+
+    const [owner, trader, others] = await ethers.getSigners();
+
+    await seedAccount(orderBookDex, [daiToken, zrxToken], owner);
+    await seedAccount(orderBookDex, [daiToken, zrxToken], trader);
 
     const adresses = {
         OBDex: orderBookDexAddress,
