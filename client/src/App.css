@@ -1,27 +1,89 @@
 .App {
-  text-align: center;
+    text-align: center;
 }
 
 .App-link {
-  color: #61dafb;
+    color: #61dafb;
 }
 
 .navbar-style {
-  margin: 5px; 
-  border-radius: 10px;
+    margin: 5px; 
+    border-radius: 10px;
 }
 
 .default-box-layout {
-  margin: 5px;
-  border-radius: 10px; 
-  background-color: gray;
+    margin: 5px;
+    border-radius: 10px; 
+    background-color: gray;
 }
 
 .admin-button {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .action-button {
-  margin: 0px;
-  padding: 0px;
+    margin: 0px;
+    padding: 0px;
+}
+
+.title-box {
+    margin-top: 10px;
+    padding-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.inner-box {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.button-group {
+    background-color: rgba(255, 255, 255, 0.5);
+    margin-top: 5px;
+    margin-bottom: 5px;
+    width: 100%;
+    border-radius: 10px;
+    display: flex;
+    justify-content: stretch;
+}
+
+.progress-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.custom-placeholder {
+    position: absolute;
+    pointer-events: none;
+    color: #6c757d;
+    left: 10px;
+}
+
+.custom-input-group .form-control {
+    padding-left: 80px; /* Space for custom placeholder */
+    text-align: right;
+}
+
+.place-order-button {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.custom-input-group .form-control::-webkit-inner-spin-button,
+.custom-input-group .form-control::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
 }
