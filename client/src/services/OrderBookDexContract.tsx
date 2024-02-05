@@ -1,6 +1,6 @@
-import { ethers, Contract, Signer } from 'ethers';
+import { ethers, Contract, Signer, BigNumber } from 'ethers';
 import OrderBookDex from '../artifacts/contracts/OrderBookDex.sol/OrderBookDex.json';
-import { TokenProps } from '../components/common/common-props';
+import { TokenProps, TokenDexBalance } from '../components/common/common-props';
 
 class OrderBookDexContract {
     private contract: Contract;
@@ -47,6 +47,37 @@ class OrderBookDexContract {
             const tx =  await this.contract
                 .connect(signer)
                 .enableTokenTrading(token.ticker);
+            await tx.wait();
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    async getBalance(token: TokenProps, signer: Signer): Promise<TokenDexBalance | undefined> {
+        try {
+            return await this.contract
+                .balances(await signer.getAddress(), token.ticker);
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    async deposit(signer: Signer, token: TokenProps, amount: BigNumber): Promise<void> {
+        try {
+            const tx = await this.contract
+                .connect(signer)
+                .deposit(token.ticker, amount);
+            await tx.wait();
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    async withdraw(signer: Signer, token: TokenProps, amount: BigNumber): Promise<void> {
+        try {
+            const tx = await this.contract
+                .connect(signer)
+                .withdraw(token.ticker, amount);
             await tx.wait();
         } catch (e) {
             console.error(e)
