@@ -11,8 +11,8 @@ const BalanceProgressBar: React.FC<BalanceProgressBarProps> = (props) => {
     const [freePercentage, setFreePercentage] = useState<number>(0);
     const [lockPercentage, setLockPercentage] = useState<number>(0);
 
-    const free = props.free ? +ethers.utils.formatEther(props.free.toString()) : 0;
-    const lock = props.locked ? +ethers.utils.formatEther(props.locked.toString()) : 0;
+    const free = props.free ? +ethers.formatEther(props.free.toString()) : 0;
+    const lock = props.locked ? +ethers.formatEther(props.locked.toString()) : 0;
 
     useEffect(() => {
         const total = free + lock;

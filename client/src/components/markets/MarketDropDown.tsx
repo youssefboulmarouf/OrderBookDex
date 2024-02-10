@@ -22,8 +22,8 @@ const MarketDropDown: React.FC<MarketDropdownProps> = (props) => {
 
             <Dropdown.Menu>
                 {props.tokens.map((token) => (
-                    <Dropdown.Item key={token.ticker} eventKey={ethers.utils.parseBytes32String(token.ticker)}>
-                        {ethers.utils.parseBytes32String(token.ticker)}
+                    <Dropdown.Item key={token.ticker} eventKey={ethers.decodeBytes32String(token.ticker)}>
+                        {ethers.decodeBytes32String(token.ticker)}
                     </Dropdown.Item>
                 ))}
             </Dropdown.Menu>

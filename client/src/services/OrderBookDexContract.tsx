@@ -1,28 +1,29 @@
-import { ethers, Contract, Signer, BigNumber } from 'ethers';
+import { ethers, Contract, Signer } from 'ethers';
 import OrderBookDex from '../artifacts/contracts/OrderBookDex.sol/OrderBookDex.json';
 import { TokenProps, TokenDexBalance } from '../components/common/common-props';
 
 class OrderBookDexContract {
     private contract: Contract;
 
-    constructor(provider: ethers.providers.Provider, contractAddress: string) {
-        this.contract = new ethers.Contract(contractAddress, OrderBookDex.abi, provider);
+    constructor(signer: ethers.Signer, contractAddress: string) {
+        this.contract = new ethers.Contract(contractAddress, OrderBookDex.abi, signer);
     }
 
-    getContractAddress(): string {
-        return this.contract.address;
+    getContractAddress(): Promise<string> {
+        return this.contract.getAddress();
     }
 
     async getAllTokens(): Promise<TokenProps[]> {
-        return await this.contract.getTokens();
+        const tokens = await this.contract.getTokens();
+        console.log('tokens: ', tokens);
+        return tokens;
     }
 
-    async addToken(token: TokenProps, signer: Signer): Promise<void> {
+    async addToken(token: TokenProps): Promise<void> {
         try {
             const tx =  await this.contract
-                .connect(signer)
                 .addToken(
-                    ethers.utils.formatBytes32String(token.ticker),
+                    ethers.encodeBytes32String(token.ticker),
                     token.tokenAddress
                 );
             await tx.wait();
@@ -31,10 +32,9 @@ class OrderBookDexContract {
         }
     }
 
-    async disableToken(token: TokenProps, signer: Signer): Promise<void> {
+    async disableToken(token: TokenProps): Promise<void> {
         try {
             const tx =  await this.contract
-                .connect(signer)
                 .disableTokenTrading(token.ticker);
             await tx.wait();
         } catch (e) {
@@ -42,10 +42,9 @@ class OrderBookDexContract {
         }
     }
 
-    async enableToken(token: TokenProps, signer: Signer): Promise<void> {
+    async enableToken(token: TokenProps): Promise<void> {
         try {
             const tx =  await this.contract
-                .connect(signer)
                 .enableTokenTrading(token.ticker);
             await tx.wait();
         } catch (e) {
@@ -62,10 +61,9 @@ class OrderBookDexContract {
         }
     }
 
-    async deposit(signer: Signer, token: TokenProps, amount: BigNumber): Promise<void> {
+    async deposit(token: TokenProps, amount: BigInt): Promise<void> {
         try {
             const tx = await this.contract
-                .connect(signer)
                 .deposit(token.ticker, amount);
             await tx.wait();
         } catch (e) {
@@ -73,10 +71,9 @@ class OrderBookDexContract {
         }
     }
 
-    async withdraw(signer: Signer, token: TokenProps, amount: BigNumber): Promise<void> {
+    async withdraw(token: TokenProps, amount: BigInt): Promise<void> {
         try {
             const tx = await this.contract
-                .connect(signer)
                 .withdraw(token.ticker, amount);
             await tx.wait();
         } catch (e) {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { BigNumber, Signer, ethers } from 'ethers';
+import { Signer, ethers } from 'ethers';
 import OrderBookDexContract from '../../services/OrderBookDexContract';
 import TokenContract from '../../services/TokenContract';
 import { TokenProps, TokenDexBalance } from '../common/common-props';
@@ -13,7 +13,7 @@ import './user-wallet.css';
 interface UserWalletProps {
     tokens: TokenProps[];
     account: Signer;
-    provider: ethers.providers.Web3Provider;
+    provider: ethers.BrowserProvider;
     orderBookDexContract: OrderBookDexContract;
 }
 
@@ -23,7 +23,7 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
     const [selectedToken, setSelectedToken] = useState<TokenProps>();
     const [assetDexBalance, setAssetDexBalance] = useState<TokenDexBalance>();
     const [tokenContract, setTokenContract] = useState<TokenContract>();
-    const [tokenBalance, setTokenBalance] = useState<BigNumber>();
+    const [tokenBalance, setTokenBalance] = useState<BigInt>();
     const [amount, setAmount] = useState('');
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,15 +39,13 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
         if (selectedToken !== undefined) {
             if (walletAction == 'deposit') {
                 await props.orderBookDexContract.deposit(
-                    props.account, 
                     selectedToken,
-                    ethers.utils.parseEther(amount)
+                    ethers.parseEther(amount)
                 );
             } else {
                 await props.orderBookDexContract.withdraw(
-                    props.account, 
                     selectedToken,
-                    ethers.utils.parseEther(amount)
+                    ethers.parseEther(amount)
                 );
             }
             refreshDexBalance(selectedToken);
@@ -63,7 +61,7 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
     useEffect(() => {
         const getAssetDexBalance = async () => {
             const token: TokenProps[] = props.tokens.filter(token => 
-                ethers.utils.parseBytes32String(token.ticker) == selectedAsset
+                ethers.decodeBytes32String(token.ticker) == selectedAsset
             );
             
             if (token.length > 0) {
@@ -97,8 +95,8 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
 
                     <Dropdown.Menu>
                         {props.tokens.map((token) => (
-                            <Dropdown.Item key={token.ticker} eventKey={ethers.utils.parseBytes32String(token.ticker)}>
-                                {ethers.utils.parseBytes32String(token.ticker)}
+                            <Dropdown.Item key={token.ticker} eventKey={ethers.decodeBytes32String(token.ticker)}>
+                                {ethers.decodeBytes32String(token.ticker)}
                             </Dropdown.Item>
                         ))}
                     </Dropdown.Menu>
@@ -111,8 +109,8 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
                 />
 
                 <BalanceProgressBar 
-                    free={assetDexBalance?.free.toBigInt()} 
-                    locked={assetDexBalance?.locked.toBigInt()}
+                    free={assetDexBalance?.free} 
+                    locked={assetDexBalance?.locked}
                 />
 
                 <Form onSubmit={handleSubmit}>
@@ -139,7 +137,7 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
 
                 <div>
                     {(selectedAsset)
-                        ? `TOKEN WALLET: ` + (+ethers.utils.formatEther((tokenBalance) ? tokenBalance.toString() : '0')) + ' ' + selectedAsset
+                        ? `TOKEN WALLET: ` + (+ethers.formatEther((tokenBalance) ? tokenBalance.toString() : '0')) + ' ' + selectedAsset
                         : ''
                     }
                 </div>
