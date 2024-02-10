@@ -50,8 +50,6 @@ async function main() {
 
     const adresses = {
         OBDex: orderBookDexAddress,
-        dai: daiAddress,
-        zrx: zrxAddress
     }
 
     fs.writeFileSync(
