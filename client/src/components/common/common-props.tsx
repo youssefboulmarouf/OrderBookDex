@@ -1,4 +1,3 @@
-import { BigNumber } from "ethers";
 
 interface TokenProps {
     ticker: string;
@@ -7,8 +6,8 @@ interface TokenProps {
 }
 
 interface TokenDexBalance {
-    free: BigNumber;
-    locked: BigNumber;
+    free: BigInt;
+    locked: BigInt;
 }
 
 export type { TokenProps, TokenDexBalance };

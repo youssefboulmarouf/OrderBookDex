@@ -33,21 +33,21 @@ const AdminSection: React.FC<AdminSectionProps> = (props) => {
     
     const addToken = async (e: React.FormEvent) => {
         e.preventDefault();
-        await props.orderBookDexContract.addToken(token, props.account);
+        await props.orderBookDexContract.addToken(token);
         await loadTokens();
     }
 
     const enableToken = async (e: React.FormEvent, token: TokenProps) => {
         e.preventDefault();
         console.log('ENABLE: ', token, e.target);
-        await props.orderBookDexContract.enableToken(token, props.account);
+        await props.orderBookDexContract.enableToken(token);
         await loadTokens();
     }
 
     const disableToken = async (e: React.FormEvent, token: TokenProps) => {
         e.preventDefault();
         console.log('DISABLE: ', token, e.target);
-        await props.orderBookDexContract.disableToken(token, props.account);
+        await props.orderBookDexContract.disableToken(token);
         await loadTokens();
     }
 
@@ -110,7 +110,7 @@ const AdminSection: React.FC<AdminSectionProps> = (props) => {
                     <tbody>
                         {tokens.map(token => (
                             <tr key={token.ticker}>
-                                <td>{ethers.utils.parseBytes32String(token.ticker)}</td>
+                                <td>{ethers.decodeBytes32String(token.ticker)}</td>
                                 <td>{token.ticker}</td>
                                 <td>{token.tokenAddress}</td>
                                 <td>

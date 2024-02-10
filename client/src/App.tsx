@@ -18,7 +18,7 @@ import OrderBookDexContract from './services/OrderBookDexContract';
 import { TokenProps } from './components/common/common-props';
 
 interface AppProps {
-    provider: ethers.providers.Web3Provider;
+    provider: ethers.BrowserProvider;
     orderBookDexContract: OrderBookDexContract;
     account: Signer;
 }

@@ -7,15 +7,16 @@ import * as utils from './utils';
 import ca from './contract-addresses.json';
 
 const LoadingContainer: React.FC = () => {
-    const [provider, setProvider] = useState<ethers.providers.Web3Provider>();
+    const [provider, setProvider] = useState<ethers.BrowserProvider>();
     const [orderBookDexContract, setOrderBookDexContract] = useState<OrderBookDexContract>();
     const [account, setAccount] = useState<Signer>();
 
     const connectWallet = async () => {
         const newProvider = await utils.connectWallet();
         setProvider(newProvider);
-        setAccount(newProvider.getSigner());
-        setOrderBookDexContract(new OrderBookDexContract(newProvider, ca.adresses.OBDex));
+        const signer = await newProvider.getSigner();
+        setAccount(signer);
+        setOrderBookDexContract(new OrderBookDexContract(signer, ca.adresses.OBDex));
     }
 
     return (
