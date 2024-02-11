@@ -43,7 +43,6 @@ const App: React.FC<AppProps> = (props) => {
     return (
         <Container fluid className="App">
             <NavBar 
-                account={props.account} 
                 orderBookDexContract={props.orderBookDexContract}
             />
             <Row>

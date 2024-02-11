@@ -9,7 +9,6 @@ import OrderBookDexContract from '../../services/OrderBookDexContract';
 
 interface NavBarProps {
     orderBookDexContract: OrderBookDexContract;
-    account: Signer;
 }
 
 const NavBar: React.FC<NavBarProps> = (props) => {
@@ -34,7 +33,6 @@ const NavBar: React.FC<NavBarProps> = (props) => {
         <AdminSection 
             showAdminSection={showAdminSection} 
             handleClose={() => setshowAdminSection(false)}
-            account={props.account}
             orderBookDexContract={props.orderBookDexContract}
         />
         </>
