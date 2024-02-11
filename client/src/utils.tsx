@@ -15,4 +15,14 @@ const connectWallet = async () => {
     }
 };
 
-export { connectWallet };
+const handleError = (e: unknown) => {
+    if (e instanceof Error) {
+        const err: Error = e;
+        const match = err.message.substring(err.message.indexOf('('), err.message.lastIndexOf(')') + 1).match(/reason="(.*?)"/);
+        console.error('match: ', match?.at(1)?.toString());
+    } else {
+        console.error('Unhandled error:', e);
+    }
+}
+
+export default { connectWallet, handleError };
