@@ -26,7 +26,7 @@ const LoadingContainer: React.FC = () => {
                 provider={provider} 
                 orderBookDexContract={orderBookDexContract} 
                 account={account}
-                /> 
+            /> 
             : <div>
                 <Button variant='warning' onClick={connectWallet}>Connect Wallet</Button>
             </div>

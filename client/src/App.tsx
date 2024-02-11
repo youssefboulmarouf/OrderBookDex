@@ -40,9 +40,7 @@ const App: React.FC<AppProps> = (props) => {
 
     return (
         <Container fluid className="App">
-            <NavBar 
-                orderBookDexContract={props.orderBookDexContract}
-            />
+            <NavBar orderBookDexContract={props.orderBookDexContract}/>
             <Row>
                 <Col sm={3}>
                     <PlaceOrder 
