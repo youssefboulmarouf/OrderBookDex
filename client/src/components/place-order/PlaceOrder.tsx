@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MarketDropDown from './MarketDropDown';
 import { TokenProps } from '../common/common-props';
 import './place-order.css';
 
 interface PlaceOrderProps {
     tokens: TokenProps[];
-    selectedAsset: string;
-    setAsset: (asset: string) => void;
+    assetToken: TokenProps;
+    setAssetToken: (assetToken: TokenProps) => void;
 }
 
 const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
@@ -15,10 +15,9 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
             <div className='title-box'>MARKETS</div>
             <div className='inner-box'>
                 <MarketDropDown 
-                    marketType='Asset'
                     tokens={props.tokens}
-                    selectedItem={props.selectedAsset}
-                    onSelectedItem={props.setAsset}
+                    assetToken={props.assetToken}
+                    setAssetToken={props.setAssetToken}
                 />
             </div>
         </div>
