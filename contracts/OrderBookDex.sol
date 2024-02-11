@@ -11,22 +11,18 @@ contract OrderBookDex {
         bool isTradable;
     }
 
-    // --- Structs ---
     struct Balance { 
         uint free; // Free balance
         uint locked; // Locked balance for orders in the order book
     }
 
-    // --- Variables ---
     address public admin;
     bytes32[] public tickerList;
+    bytes32 public quoteTicker;
 
     mapping (bytes32 => Token) public tokens;
     mapping (address => mapping (bytes32 => Balance)) public balances;
 
-    bytes32 public quoteTicker;
-
-    // --- Contract Constructor ---
     constructor() { 
         admin = msg.sender; 
         quoteTicker = bytes32(0);
@@ -41,12 +37,9 @@ contract OrderBookDex {
         tickerList.push(_ticker);
     }
 
-    // --- Get Tokens ---
     function getTokens() external view returns(Token[] memory) {
-        // Creating a memory list of Tokens
         Token[] memory _tokens = new Token[](tickerList.length);
 
-        // Populating the list a memory list of Tokens
         for (uint i = 0; i < tickerList.length; i++) {
             bytes32 currentTicker = tickerList[i];
             address tokenAddress = tokens[currentTicker].tokenAddress;
@@ -57,29 +50,24 @@ contract OrderBookDex {
         return _tokens;
     }
 
-    // --- Get Ticker List ---
     function getTickerList() external view returns(bytes32[] memory) {
         return tickerList;
     }
 
-    // --- disable Trading For A Given Token ---
     function disableTokenTrading(bytes32 _ticker) external onlyAdmin() tokenExist(_ticker) tokenEnabled(_ticker) isNotQuoteTicker(_ticker) {
         tokens[_ticker].isTradable = false;
     }
 
-    // --- Enable Trading For A Given Token ---
     function enableTokenTrading(bytes32 _ticker) external onlyAdmin() tokenExist(_ticker) tokenDisabled(_ticker) {
         tokens[_ticker].isTradable = true;
     }
 
-    // --- Deposit Tokens ---
     function deposit(bytes32 _ticker, uint _amount) external tokenExist(_ticker) {
         IERC20 token = IERC20(tokens[_ticker].tokenAddress);
         token.transferFrom(msg.sender, address(this), _amount);
         balances[msg.sender][_ticker].free = balances[msg.sender][_ticker].free + _amount;
     }
 
-    // --- Withdraw Tokens ---
     function withdraw(bytes32 _ticker, uint _amount) external tokenExist(_ticker) hasEnoughBalance(_ticker, _amount) {
 
         IERC20 token = IERC20(tokens[_ticker].tokenAddress);
@@ -87,61 +75,51 @@ contract OrderBookDex {
         token.transfer(msg.sender, _amount);
     }
 
-    // --- Modifier: Admin Access Controle ---
     modifier onlyAdmin() {
         require(admin == msg.sender, "Unauthorized!");
         _;
     }
 
-    // --- Modifier: Token Should NOT Exist ---
     modifier tokenDoesNotExist(bytes32 _ticker) {
         require(tokens[_ticker].tokenAddress == address(0), "Ticker Exists!");
         _;
     }
 
-    // --- Modifier: Token Should Exist ---
     modifier tokenExist(bytes32 _ticker) {
         require(tokens[_ticker].tokenAddress != address(0), "Ticker Does Not Exist!");
         _;
     }
 
-    // --- Modifier: Token Should Be Disabled ---
     modifier tokenDisabled(bytes32 _ticker) {
         require(tokens[_ticker].isTradable == false, "Token Enabled!");
         _;
     }
 
-    // --- Modifier: Token Should Be Enabled ---
     modifier tokenEnabled(bytes32 _ticker) {
         require(tokens[_ticker].isTradable == true, "Token Disabled!");
         _;
     }
 
-    // --- Modifier: Quote Ticker Should Be Defined ---
     modifier quoteTickerDefined() {
         require(quoteTicker != bytes32(0), "Quote Ticker Undefined!");
         _;
     }
 
-    // --- Modifier: Quote Ticker Should Not Be Defined ---
     modifier quoteTickerUndefined() {
         require(quoteTicker == bytes32(0), "Quote Ticker Defined!");
         _;
     }
 
-    // --- Modifier: Ticker Is Quote Ticker---
     modifier isQuoteTicker(bytes32 _ticker) {
         require(quoteTicker == _ticker, "Not Quote Ticker!");
         _;
     }
 
-    // --- Modifier: Ticker Is Not Quote Ticker---
     modifier isNotQuoteTicker(bytes32 _ticker) {
         require(quoteTicker != _ticker, "Quote Ticker!");
         _;
     }
 
-    // --- Modifier: Trader Should Have Enough Balance For Action ---
     modifier hasEnoughBalance(bytes32 _ticker, uint _amount) {
         require(balances[msg.sender][_ticker].free >= _amount, "Low Balance!");
         _;
