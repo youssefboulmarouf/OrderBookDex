@@ -18,8 +18,8 @@ contract OrderBookDex {
     }
 
     // --- Variables ---
-    address public admin; // Contract owner
-    bytes32[] public tickerList; // List of token's ticker
+    address public admin;
+    bytes32[] public tickerList;
 
     mapping (bytes32 => Token) public tokens;
     mapping (address => mapping (bytes32 => Balance)) public balances;
