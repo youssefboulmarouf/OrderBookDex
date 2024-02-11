@@ -1,5 +1,6 @@
 import { ethers, Contract, Signer } from 'ethers';
 import TestToken from '../artifacts/contracts/TestToken.sol/TestToken.json';
+import Utils from '../utils';
 
 class TokenContract {
     private contract: Contract;
@@ -16,7 +17,7 @@ class TokenContract {
         try {
             return await this.contract.balanceOf(await signer.getAddress());
         } catch (e) {
-            console.error(e)
+            Utils.handleError(e)
         }
     }
 }
