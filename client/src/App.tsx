@@ -25,6 +25,7 @@ interface AppProps {
 const App: React.FC<AppProps> = (props) => {
     const [tokens, setTokens] = useState<TokenProps[]>([]);
     const [selectedAsset, setSelectedAsset] = useState<string>('');
+    const [assetToken, setAssetToken] = useState<TokenProps>();
 
     const loadTokens = async () => {
         const allTokens: TokenProps[] = await props.orderBookDexContract.getAllTokens();
@@ -38,6 +39,24 @@ const App: React.FC<AppProps> = (props) => {
         initToken();
     }, []);
 
+    useEffect(() => {
+        const initDefaultToken = async () => {
+            const defaultToken: TokenProps[] = tokens.filter(token => 
+                ethers.decodeBytes32String(token.ticker) == 'DAI'
+            );
+            setAssetToken(defaultToken[0]);
+        };
+        initDefaultToken();
+    }, [tokens]);
+
+    const setSelectedAssetToken = (assetToken: TokenProps) => {
+        setAssetToken(assetToken);
+    };
+
+    if (assetToken === undefined) {
+        return (<></>);
+    }
+
     return (
         <Container fluid className="App">
             <NavBar orderBookDexContract={props.orderBookDexContract}/>
@@ -45,8 +64,8 @@ const App: React.FC<AppProps> = (props) => {
                 <Col sm={3}>
                     <PlaceOrder 
                         tokens={tokens}
-                        selectedAsset={selectedAsset}
-                        setAsset={setSelectedAsset}
+                        assetToken={assetToken}
+                        setAssetToken={setSelectedAssetToken}
                     />
                 </Col>
                 <Col sm={3}>
@@ -60,7 +79,7 @@ const App: React.FC<AppProps> = (props) => {
                 <Col sm={3}>
                     <UserWallet
                         tokens={tokens}
-                        selectedAsset={selectedAsset}
+                        selectedAsset={assetToken}
                         account={props.account}
                         provider={props.provider}
                         orderBookDexContract={props.orderBookDexContract}
