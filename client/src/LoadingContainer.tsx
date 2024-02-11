@@ -3,7 +3,7 @@ import { ethers, Signer } from 'ethers';
 import Button from 'react-bootstrap/Button';
 import OrderBookDexContract from './services/OrderBookDexContract';
 import App from './App';
-import * as utils from './utils';
+import Utils from './utils';
 import ca from './contract-addresses.json';
 
 const LoadingContainer: React.FC = () => {
@@ -12,7 +12,7 @@ const LoadingContainer: React.FC = () => {
     const [account, setAccount] = useState<Signer>();
 
     const connectWallet = async () => {
-        const newProvider = await utils.connectWallet();
+        const newProvider = await Utils.connectWallet();
         setProvider(newProvider);
         const signer = await newProvider.getSigner();
         setAccount(signer);
@@ -26,7 +26,7 @@ const LoadingContainer: React.FC = () => {
                 provider={provider} 
                 orderBookDexContract={orderBookDexContract} 
                 account={account}
-                /> 
+            /> 
             : <div>
                 <Button variant='warning' onClick={connectWallet}>Connect Wallet</Button>
             </div>

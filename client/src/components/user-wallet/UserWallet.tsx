@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import Dropdown from 'react-bootstrap/Dropdown';
 import { Signer, ethers } from 'ethers';
 import OrderBookDexContract from '../../services/OrderBookDexContract';
 import TokenContract from '../../services/TokenContract';
@@ -12,18 +11,21 @@ import './user-wallet.css';
 
 interface UserWalletProps {
     tokens: TokenProps[];
+    selectedAsset: TokenProps;
     account: Signer;
     provider: ethers.BrowserProvider;
     orderBookDexContract: OrderBookDexContract;
 }
 
 const UserWallet: React.FC<UserWalletProps> = (props) =>{
-    const [walletAction, setWalletAction] = useState('deposit');
-    const [selectedAsset, setSelectedAsset] = useState<string>('');
-    const [selectedToken, setSelectedToken] = useState<TokenProps>();
+    const [walletAction, setWalletAction] = useState('Deposit');
+    
     const [assetDexBalance, setAssetDexBalance] = useState<TokenDexBalance>();
+    const [daiDexBalance, setDaiDexBalance] = useState<TokenDexBalance>();
+    
     const [tokenContract, setTokenContract] = useState<TokenContract>();
     const [tokenBalance, setTokenBalance] = useState<BigInt>();
+    
     const [amount, setAmount] = useState('');
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,43 +38,41 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (selectedToken !== undefined) {
-            if (walletAction == 'deposit') {
-                await props.orderBookDexContract.deposit(
-                    selectedToken,
-                    ethers.parseEther(amount)
-                );
-            } else {
-                await props.orderBookDexContract.withdraw(
-                    selectedToken,
-                    ethers.parseEther(amount)
-                );
-            }
-            refreshDexBalance(selectedToken);
-            setTokenBalance(await tokenContract?.getBalance(props.account));
+        if (walletAction == 'Deposit') {
+            await props.orderBookDexContract.deposit(
+                props.selectedAsset,
+                ethers.parseEther(amount)
+            );
+        } else {
+            await props.orderBookDexContract.withdraw(
+                props.selectedAsset,
+                ethers.parseEther(amount)
+            );
         }
+        refreshDexBalance(props.selectedAsset);
+        setTokenBalance(await tokenContract?.getBalance(props.account));
     };
 
     const refreshDexBalance = async (token: TokenProps) => {
         const balance = await props.orderBookDexContract.getBalance(token, props.account)
         setAssetDexBalance(balance);
+
+
+        const dai: TokenProps[] = props.tokens.filter(token => 
+            ethers.decodeBytes32String(token.ticker) == 'DAI'
+        );
+        const daiBalance = await props.orderBookDexContract.getBalance(dai[0], props.account)
+        setDaiDexBalance(daiBalance);
     }
 
     useEffect(() => {
         const getAssetDexBalance = async () => {
-            const token: TokenProps[] = props.tokens.filter(token => 
-                ethers.decodeBytes32String(token.ticker) == selectedAsset
-            );
-            
-            if (token.length > 0) {
-                setSelectedToken(token[0]);
-                refreshDexBalance(token[0]);
-                setTokenContract(new TokenContract(props.provider, token[0].tokenAddress));
-                setTokenBalance(await tokenContract?.getBalance(props.account));
-            }
+            refreshDexBalance(props.selectedAsset);
+            setTokenContract(new TokenContract(props.provider, props.selectedAsset.tokenAddress));
+            setTokenBalance(await tokenContract?.getBalance(props.account));
         }
         getAssetDexBalance();
-    }, [selectedAsset]);
+    }, [props.selectedAsset]);
 
     useEffect(() => {
         const getWalletBalance = async () => {
@@ -83,34 +83,30 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
 
     return (
         <div className='default-box-layout user-wallet'>
-            <div className='title-box'>DEX WALLET</div>
+            <div className='title-box'>OBDex Wallet</div>
             <div className='inner-box'>
-                <Dropdown className='transparent-dropdown' onSelect={(item) => setSelectedAsset((item !== null) ? item : '')}>
-                    <Dropdown.Toggle>
-                        <span className='dropdown-toggle-left-side'>
-                            {selectedAsset ? `${selectedAsset} ` : ''}
-                        </span>
-                        <span className='dropdown-toggle-right-side'>Asset</span>
-                    </Dropdown.Toggle>
+                <BalanceProgressBar 
+                    token='DAI'
+                    free={daiDexBalance?.free}
+                    locked={daiDexBalance?.locked}
+                />
+                {(ethers.decodeBytes32String(props.selectedAsset.ticker) != 'DAI')
+                    ? <>
+                        <BalanceProgressBar 
+                            token={ethers.decodeBytes32String(props.selectedAsset.ticker)}
+                            free={assetDexBalance?.free} 
+                            locked={assetDexBalance?.locked}
+                        />
+                    </>
+                    : ''
+                }
 
-                    <Dropdown.Menu>
-                        {props.tokens.map((token) => (
-                            <Dropdown.Item key={token.ticker} eventKey={ethers.decodeBytes32String(token.ticker)}>
-                                {ethers.decodeBytes32String(token.ticker)}
-                            </Dropdown.Item>
-                        ))}
-                    </Dropdown.Menu>
-                </Dropdown>
+                <div className='balance-title-box'>Transfer {ethers.decodeBytes32String(props.selectedAsset.ticker)}</div>
 
                 <WalletAction 
-                    selectedToken={selectedToken}
+                    selectedToken={props.selectedAsset}
                     walletAction={walletAction}
                     setWalletAction={setWalletAction}
-                />
-
-                <BalanceProgressBar 
-                    free={assetDexBalance?.free} 
-                    locked={assetDexBalance?.locked}
                 />
 
                 <Form onSubmit={handleSubmit}>
@@ -120,7 +116,6 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
                             <Form.Control 
                                 value={amount} 
                                 onChange={handleAmountChange}
-                                disabled={selectedToken === undefined}
                             />
                         </div>
                     </Form.Group>
@@ -128,19 +123,11 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
                     <Button 
                         className='place-order-button button' 
                         type="submit" 
-                        variant='primary'
-                        disabled={selectedToken === undefined}
+                        variant={(walletAction === 'Deposit') ? 'primary' : 'warning'}
                     >
-                        Place Order
+                        Transfer Tokens
                     </Button>
                 </Form>
-
-                <div>
-                    {(selectedAsset)
-                        ? `TOKEN WALLET: ` + (+ethers.formatEther((tokenBalance) ? tokenBalance.toString() : '0')) + ' ' + selectedAsset
-                        : ''
-                    }
-                </div>
             </div>
         </div>
     );

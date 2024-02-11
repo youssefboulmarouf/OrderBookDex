@@ -8,7 +8,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 import NavBar from './components/navbar/NavBar';
-import Markets from './components/markets/Markets';
 import UserWallet from './components/user-wallet/UserWallet';
 import OrderBook from './components/order-book/OrderBook';
 import Chart from './components/chart/Chart';
@@ -26,7 +25,7 @@ interface AppProps {
 const App: React.FC<AppProps> = (props) => {
     const [tokens, setTokens] = useState<TokenProps[]>([]);
     const [selectedAsset, setSelectedAsset] = useState<string>('');
-    const [selectedQuote, setSelectedQuote] = useState<string>('');
+    const [assetToken, setAssetToken] = useState<TokenProps>();
 
     const loadTokens = async () => {
         const allTokens: TokenProps[] = await props.orderBookDexContract.getAllTokens();
@@ -40,21 +39,34 @@ const App: React.FC<AppProps> = (props) => {
         initToken();
     }, []);
 
+    useEffect(() => {
+        const initDefaultToken = async () => {
+            const defaultToken: TokenProps[] = tokens.filter(token => 
+                ethers.decodeBytes32String(token.ticker) == 'DAI'
+            );
+            setAssetToken(defaultToken[0]);
+        };
+        initDefaultToken();
+    }, [tokens]);
+
+    const setSelectedAssetToken = (assetToken: TokenProps) => {
+        setAssetToken(assetToken);
+    };
+
+    if (assetToken === undefined) {
+        return (<></>);
+    }
+
     return (
         <Container fluid className="App">
-            <NavBar 
-                orderBookDexContract={props.orderBookDexContract}
-            />
+            <NavBar orderBookDexContract={props.orderBookDexContract}/>
             <Row>
                 <Col sm={3}>
-                    <Markets 
+                    <PlaceOrder 
                         tokens={tokens}
-                        selectedAsset={selectedAsset}
-                        selectedQuote={selectedQuote}
-                        setAsset={setSelectedAsset}
-                        setQuote={setSelectedQuote}
+                        assetToken={assetToken}
+                        setAssetToken={setSelectedAssetToken}
                     />
-                    <PlaceOrder />
                 </Col>
                 <Col sm={3}>
                     <OrderBook />
@@ -67,6 +79,7 @@ const App: React.FC<AppProps> = (props) => {
                 <Col sm={3}>
                     <UserWallet
                         tokens={tokens}
+                        selectedAsset={assetToken}
                         account={props.account}
                         provider={props.provider}
                         orderBookDexContract={props.orderBookDexContract}

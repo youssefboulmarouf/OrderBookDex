@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 
 interface BalanceProgressBarProps {
+    token: string;
     free: BigInt | undefined;
     locked: BigInt | undefined;
 }
@@ -28,9 +29,10 @@ const BalanceProgressBar: React.FC<BalanceProgressBarProps> = (props) => {
 
     return (
         <div>
+            <div className='balance-title-box'>{props.token} Balance</div>
             <div className='progress-container'>
-                <span className='progress-label'>Available: {free}</span>
-                <span className='progress-label'>Locked: {lock}</span>
+                <span className='progress-label'>Available: {free + ' ' + props.token}</span>
+                <span className='progress-label'>Locked: {lock + ' ' + props.token}</span>
             </div>
             <ProgressBar className='progress'>
                 <ProgressBar variant='success' now={freePercentage}/>
