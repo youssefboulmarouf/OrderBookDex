@@ -26,7 +26,6 @@ interface AppProps {
 const App: React.FC<AppProps> = (props) => {
     const [tokens, setTokens] = useState<TokenProps[]>([]);
     const [selectedAsset, setSelectedAsset] = useState<string>('');
-    const [selectedQuote, setSelectedQuote] = useState<string>('');
 
     const loadTokens = async () => {
         const allTokens: TokenProps[] = await props.orderBookDexContract.getAllTokens();
@@ -50,9 +49,7 @@ const App: React.FC<AppProps> = (props) => {
                     <Markets 
                         tokens={tokens}
                         selectedAsset={selectedAsset}
-                        selectedQuote={selectedQuote}
                         setAsset={setSelectedAsset}
-                        setQuote={setSelectedQuote}
                     />
                     <PlaceOrder />
                 </Col>

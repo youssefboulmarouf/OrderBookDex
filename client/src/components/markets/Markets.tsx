@@ -6,9 +6,7 @@ import './markets.css';
 interface MarketProps {
     tokens: TokenProps[];
     selectedAsset: string;
-    selectedQuote: string;
     setAsset: (asset: string) => void;
-    setQuote: (quote: string) => void;
 }
 
 const Markets: React.FC<MarketProps> = (props) => {
@@ -21,12 +19,6 @@ const Markets: React.FC<MarketProps> = (props) => {
                     tokens={props.tokens}
                     selectedItem={props.selectedAsset}
                     onSelectedItem={props.setAsset}
-                />
-                <MarketDropDown 
-                    marketType='Quote'
-                    tokens={props.tokens}
-                    selectedItem={props.selectedQuote}
-                    onSelectedItem={props.setQuote}
                 />
             </div>
         </div>
