@@ -64,6 +64,7 @@ const App: React.FC<AppProps> = (props) => {
                 <Col sm={3}>
                     <UserWallet
                         tokens={tokens}
+                        selectedAsset={selectedAsset}
                         account={props.account}
                         provider={props.provider}
                         orderBookDexContract={props.orderBookDexContract}
