@@ -18,14 +18,23 @@ contract OrderBookDex {
     }
 
     // --- Variables ---
-    address public admin; // Contract owner
-    bytes32[] public tickerList; // List of token's ticker
+    address public admin;
+    bytes32[] public tickerList;
 
     mapping (bytes32 => Token) public tokens;
-    mapping (address => mapping (bytes32 => Balance))   public balances;
+    mapping (address => mapping (bytes32 => Balance)) public balances;
+
+    bytes32 public quoteTicker;
 
     // --- Contract Constructor ---
-    constructor() { admin = msg.sender; }
+    constructor() { 
+        admin = msg.sender; 
+        quoteTicker = bytes32(0);
+    }
+
+    function setQuoteTicker(bytes32 _ticker) external onlyAdmin() tokenExist(_ticker) quoteTickerUndefined() {
+        quoteTicker = _ticker;
+    }
 
     function addToken(bytes32 _ticker, address _tokenAddress) external onlyAdmin() tokenDoesNotExist(_ticker) {
         tokens[_ticker] = Token(_ticker, _tokenAddress, true); 
@@ -34,9 +43,6 @@ contract OrderBookDex {
 
     // --- Get Tokens ---
     function getTokens() external view returns(Token[] memory) {
-        // Since we can't return a mapping in Solidity
-        // We have to convert the Tokens mapping to Token List
-
         // Creating a memory list of Tokens
         Token[] memory _tokens = new Token[](tickerList.length);
 
@@ -57,7 +63,7 @@ contract OrderBookDex {
     }
 
     // --- disable Trading For A Given Token ---
-    function disableTokenTrading(bytes32 _ticker) external onlyAdmin() tokenExist(_ticker) tokenEnabled(_ticker) {
+    function disableTokenTrading(bytes32 _ticker) external onlyAdmin() tokenExist(_ticker) tokenEnabled(_ticker) isNotQuoteTicker(_ticker) {
         tokens[_ticker].isTradable = false;
     }
 
@@ -73,7 +79,6 @@ contract OrderBookDex {
         balances[msg.sender][_ticker].free = balances[msg.sender][_ticker].free + _amount;
     }
 
-        
     // --- Withdraw Tokens ---
     function withdraw(bytes32 _ticker, uint _amount) external tokenExist(_ticker) hasEnoughBalance(_ticker, _amount) {
 
@@ -109,6 +114,30 @@ contract OrderBookDex {
     // --- Modifier: Token Should Be Enabled ---
     modifier tokenEnabled(bytes32 _ticker) {
         require(tokens[_ticker].isTradable == true, "Token Disabled!");
+        _;
+    }
+
+    // --- Modifier: Quote Ticker Should Be Defined ---
+    modifier quoteTickerDefined() {
+        require(quoteTicker != bytes32(0), "Quote Ticker Undefined!");
+        _;
+    }
+
+    // --- Modifier: Quote Ticker Should Not Be Defined ---
+    modifier quoteTickerUndefined() {
+        require(quoteTicker == bytes32(0), "Quote Ticker Defined!");
+        _;
+    }
+
+    // --- Modifier: Ticker Is Quote Ticker---
+    modifier isQuoteTicker(bytes32 _ticker) {
+        require(quoteTicker == _ticker, "Not Quote Ticker!");
+        _;
+    }
+
+    // --- Modifier: Ticker Is Not Quote Ticker---
+    modifier isNotQuoteTicker(bytes32 _ticker) {
+        require(quoteTicker != _ticker, "Quote Ticker!");
         _;
     }
 
