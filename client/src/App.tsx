@@ -24,7 +24,6 @@ interface AppProps {
 
 const App: React.FC<AppProps> = (props) => {
     const [tokens, setTokens] = useState<TokenProps[]>([]);
-    const [selectedAsset, setSelectedAsset] = useState<string>('');
     const [assetToken, setAssetToken] = useState<TokenProps>();
 
     const loadTokens = async () => {
