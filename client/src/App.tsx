@@ -8,7 +8,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 import NavBar from './components/navbar/NavBar';
-import Markets from './components/markets/Markets';
 import UserWallet from './components/user-wallet/UserWallet';
 import OrderBook from './components/order-book/OrderBook';
 import Chart from './components/chart/Chart';
@@ -46,12 +45,11 @@ const App: React.FC<AppProps> = (props) => {
             />
             <Row>
                 <Col sm={3}>
-                    <Markets 
+                    <PlaceOrder 
                         tokens={tokens}
                         selectedAsset={selectedAsset}
                         setAsset={setSelectedAsset}
                     />
-                    <PlaceOrder />
                 </Col>
                 <Col sm={3}>
                     <OrderBook />
