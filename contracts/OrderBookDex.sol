@@ -5,6 +5,9 @@ import '../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 contract OrderBookDex {
 
+    enum  ORDER_SIDE { BUY, SELL }
+    enum  ORDER_TYPE { LIMIT, MARKET }
+
     struct Token { 
         bytes32 ticker; // Ticker of the token to be traded
         address tokenAddress; // Address of the token
@@ -16,12 +19,26 @@ contract OrderBookDex {
         uint locked; // Locked balance for orders in the order book
     }
 
+    struct Order { 
+        uint id;
+        address traderAddress;
+        ORDER_SIDE orderSide;
+        ORDER_TYPE orderType;
+        bytes32 ticker; 
+        uint amount; 
+        uint[] fills; 
+        uint price; 
+        uint date;
+    }
+
     address public admin;
     bytes32[] public tickerList;
     bytes32 public quoteTicker;
+    uint public nextOrderId;
 
     mapping (bytes32 => Token) public tokens;
     mapping (address => mapping (bytes32 => Balance)) public balances;
+    mapping (bytes32 => mapping (uint => Order[])) public orderBook;
 
     constructor() { 
         admin = msg.sender; 
@@ -37,7 +54,7 @@ contract OrderBookDex {
         tickerList.push(_ticker);
     }
 
-    function getTokens() external view returns(Token[] memory) {
+    function getTokens() external view returns(Token[] memory) external {
         Token[] memory _tokens = new Token[](tickerList.length);
 
         for (uint i = 0; i < tickerList.length; i++) {
@@ -50,7 +67,7 @@ contract OrderBookDex {
         return _tokens;
     }
 
-    function getTickerList() external view returns(bytes32[] memory) {
+    function getTickerList() external view returns(bytes32[] memory) external {
         return tickerList;
     }
 
