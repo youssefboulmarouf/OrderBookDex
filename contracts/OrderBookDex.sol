@@ -31,12 +31,21 @@ contract OrderBookDex {
         uint date;
     }
 
+    struct OrpderParams {
+        bytes32 ticker;
+        uint amount;
+        uint price;
+        ORDER_SIDE orderSide;
+        ORDER_TYPE orderType;
+    }
+
     address public admin;
     bytes32[] public tickerList;
     bytes32 public quoteTicker;
 
     mapping (bytes32 => Token) public tokens;
     mapping (address => mapping (bytes32 => Balance)) public balances;
+    mapping (bytes32 => mapping (ORDER_SIDE => Order[])) public orderBook;
 
     constructor() { 
         admin = msg.sender; 
@@ -111,6 +120,11 @@ contract OrderBookDex {
             token.transfer(msg.sender, _amount);
         }
 
+    function placeOrder(OrpderParams memory _params) 
+        external {
+
+        }
+    
     modifier onlyAdmin() {
         require(admin == msg.sender, "Unauthorized!");
         _;
