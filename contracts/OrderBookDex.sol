@@ -5,28 +5,39 @@ import '../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 contract OrderBookDex {
 
+    enum ORDER_SIDE { BUY, SELL }
+    enum ORDER_TYPE { MARKET, LIMIT }
+
     struct Token { 
-        bytes32 ticker; // Ticker of the token to be traded
-        address tokenAddress; // Address of the token
+        bytes32 ticker;
+        address tokenAddress;
         bool isTradable;
     }
 
-    // --- Structs ---
     struct Balance { 
-        uint free; // Free balance
-        uint locked; // Locked balance for orders in the order book
+        uint free; 
+        uint locked;
     }
 
-    // --- Variables ---
+    struct Order { 
+        uint id;
+        address traderAddress;
+        ORDER_SIDE orderSide;
+        ORDER_TYPE orderType;
+        bytes32 ticker; 
+        uint amount; 
+        uint[] fills; 
+        uint price; 
+        uint date;
+    }
+
     address public admin;
     bytes32[] public tickerList;
+    bytes32 public quoteTicker;
 
     mapping (bytes32 => Token) public tokens;
     mapping (address => mapping (bytes32 => Balance)) public balances;
 
-    bytes32 public quoteTicker;
-
-    // --- Contract Constructor ---
     constructor() { 
         admin = msg.sender; 
         quoteTicker = bytes32(0);
