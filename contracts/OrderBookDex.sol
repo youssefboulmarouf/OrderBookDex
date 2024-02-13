@@ -174,4 +174,19 @@ contract OrderBookDex {
         require(balances[msg.sender][_ticker].free >= _amount, "Low Balance!");
         _;
     }
+
+    modifier placeOrderModifier(OrpderParams memory _params) {
+        // Tokne Exists
+        require(tokens[_params.ticker].tokenAddress != address(0), "Ticker Does Not Exist!");
+
+        // Token Enabled
+        require(tokens[_params.ticker].isTradable == true, "Token Disabled!");
+
+        // Quote Ticker Defined
+        require(quoteTicker != bytes32(0), "Quote Ticker Undefined!");
+
+        // Is Not Quote Ticker
+        require(quoteTicker != _params.ticker, "Quote Ticker!");
+        _;
+    }
 }
