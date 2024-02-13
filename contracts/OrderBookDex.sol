@@ -85,8 +85,7 @@ contract OrderBookDex {
 
     function deposit(bytes32 _ticker, uint _amount) 
         external 
-        tokenExist(_ticker) 
-        {
+        tokenExist(_ticker) {
             IERC20 token = IERC20(tokens[_ticker].tokenAddress);
             token.transferFrom(msg.sender, address(this), _amount);
             balances[msg.sender][_ticker].free = balances[msg.sender][_ticker].free + _amount;
