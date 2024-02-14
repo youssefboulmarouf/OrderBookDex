@@ -143,10 +143,7 @@ contract OrderBookDex {
     function createMarketOrder(bytes32 _ticker, uint _amount, ORDER_SIDE _side)  
         internal
         ordersExists(_ticker, _side) {
-            uint _amountToLock = 0; // Deduce amount to lock
-            uint _marketPrice = 0; // Deduce market price
             
-            lockOrderAmount(_ticker, _amountToLock, _marketPrice, _side, ORDER_TYPE.LIMIT);
         }
 
     function lockOrderAmount(bytes32 _ticker, uint _amount, uint _price, ORDER_SIDE _side, ORDER_TYPE _orderType) 
