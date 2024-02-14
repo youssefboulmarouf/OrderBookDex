@@ -42,6 +42,7 @@ contract OrderBookDex {
     address public admin;
     bytes32[] public tickerList;
     bytes32 public quoteTicker;
+    uint public nextOrderId;
 
     mapping (bytes32 => Token) public tokens;
     mapping (address => mapping (bytes32 => Balance)) public balances;
@@ -121,9 +122,49 @@ contract OrderBookDex {
         }
 
     function placeOrder(OrpderParams memory _params) 
-        external {
-
+        external 
+        placeOrderModifier(_params)
+        hasEnoughTokenToSell(_params) {
+            if (_params.orderType == ORDER_TYPE.LIMIT) {
+                createLimitOrder(_params.ticker, _params.amount, _params.price, _params.orderSide);
+            } else if (_params.orderType == ORDER_TYPE.MARKET) {
+                createMarketOrder(_params.ticker, _params.amount, _params.orderSide);
+            } else {
+                revert('Unkown Order Type!');
+            }
         }
+    
+    function createLimitOrder(bytes32 _ticker, uint _amount, uint _price, ORDER_SIDE _side) 
+        internal
+        hasEnoughTokenToBuy(_amount, _price, _side) {
+            lockOrderAmount(_ticker, _amount, _price, _side, ORDER_TYPE.LIMIT);
+        }
+    
+    function createMarketOrder(bytes32 _ticker, uint _amount, ORDER_SIDE _side)  
+        internal
+        ordersExists(_ticker, _side) {
+            uint _amountToLock = 0; // Deduce amount to lock
+            uint _marketPrice = 0; // Deduce market price
+            
+            lockOrderAmount(_ticker, _amountToLock, _marketPrice, _side, ORDER_TYPE.LIMIT);
+        }
+
+    function lockOrderAmount(bytes32 _ticker, uint _amount, uint _price, ORDER_SIDE _side, ORDER_TYPE _orderType) 
+        internal {
+
+            bytes32 tokenToLock = _ticker;
+            uint amountToLock = _amount;
+
+            if (_side == ORDER_SIDE.BUY) {
+                tokenToLock = quoteTicker;
+                if (_orderType == ORDER_TYPE.LIMIT) { 
+                    amountToLock = _amount * _price;
+                }
+            }
+
+            balances[msg.sender][tokenToLock].free = balances[msg.sender][tokenToLock].free - amountToLock;
+            balances[msg.sender][tokenToLock].locked = balances[msg.sender][tokenToLock].locked + amountToLock;
+    }
     
     modifier onlyAdmin() {
         require(admin == msg.sender, "Unauthorized!");
@@ -187,6 +228,31 @@ contract OrderBookDex {
 
         // Is Not Quote Ticker
         require(quoteTicker != _params.ticker, "Quote Ticker!");
+        _;
+    }
+
+    modifier hasEnoughTokenToSell(OrpderParams memory _params) {
+        if (_params.orderSide == ORDER_SIDE.SELL) {
+            require(balances[msg.sender][_params.ticker].free >= _params.amount, "Low Token Balance!");
+        }
+        _;
+    }
+
+    modifier hasEnoughTokenToBuy(uint _amount, uint _price, ORDER_SIDE _side) {
+        // This should ONLY be checked on LIMIT orders 
+        // since we know the exact amount and price
+        // which is not the case in MARKET orders
+        if (_side == ORDER_SIDE.BUY) {
+            require(balances[msg.sender][quoteTicker].free >= _amount * _price, "Low DAI Balance!");
+        }
+        _;
+    }
+
+    modifier ordersExists(bytes32 _ticker, ORDER_SIDE _side) {
+        // This should ONLY be checked on MARKET orders 
+        // since we need opposite orders to exist for the matching to happen
+        Order[] memory orders = orderBook[_ticker][(_side == ORDER_SIDE.BUY ? ORDER_SIDE.SELL : ORDER_SIDE.BUY)];
+        require(orders.length > 0, "Empty Order Book!");
         _;
     }
 }
