@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import '../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '../node_modules/hardhat/console.sol';
 
 contract OrderBookDex {
 
@@ -119,6 +120,13 @@ contract OrderBookDex {
             IERC20 token = IERC20(tokens[_ticker].tokenAddress);
             balances[msg.sender][_ticker].free = balances[msg.sender][_ticker].free - _amount;
             token.transfer(msg.sender, _amount);
+        }
+
+    function getOrders(bytes32 _ticker, ORDER_SIDE _side)
+        external 
+        view 
+        returns(Order[] memory) {
+            return orderBook[_ticker][_side];
         }
 
     function placeOrder(OrpderParams memory _params) 
@@ -284,7 +292,7 @@ contract OrderBookDex {
         // since we know the exact amount and price
         // which is not the case in MARKET orders
         if (_side == ORDER_SIDE.BUY) {
-            require(balances[msg.sender][quoteTicker].free >= _amount * _price, "Low DAI Balance!");
+            require(balances[msg.sender][quoteTicker].free >= _amount * _price, "Low Quote Balance!");
         }
         _;
     }
