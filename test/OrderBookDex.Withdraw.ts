@@ -9,39 +9,14 @@ describe('Withdraw Balance', () => {
         const daiToken = await testUtils.deployTokenTest("Dai Stable Coin", "DAI");
 
         const [owner, trader] = await ethers.getSigners();
-
-        const daiDetails = await testUtils.getContractDetails(daiToken.contract);
         
-        await orderBookDex
-            .contract
-            .connect(owner)
-            .addToken(
-                ethers.encodeBytes32String(daiDetails.symbol), 
-                daiDetails.address
-            );
+        await testUtils.addToken(orderBookDex.contract, daiToken.contract);
         
-        const amountDeposit = ethers.parseUnits('1', 'ether');
-
-        // Mint token for trader
-        await daiToken
-            .contract
-            .faucet(trader.address, amountDeposit);
-        
-        // Approve DEX to spend tokens for trader
-        const orderBookDexAddress = await orderBookDex.contract.getAddress();
-        await daiToken
-            .contract
-            .connect(trader)
-            .approve(orderBookDexAddress, amountDeposit);
-
-        // Deposit balance of amount in trader balance
-        await orderBookDex
-            .contract
-            .connect(trader)
-            .deposit(
-                ethers.encodeBytes32String(daiDetails.symbol),
-                amountDeposit
-            );
+        await testUtils.seedTradersWallets(
+            orderBookDex.contract, 
+            daiToken.contract, 
+            ethers.parseUnits('1', 'ether')
+        );
         
         return { orderBookDex, daiToken, owner, trader };
     }

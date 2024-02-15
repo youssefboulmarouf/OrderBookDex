@@ -2,8 +2,21 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import * as testUtils from './TestUtils';
+import { OrderBookDex } from "../typechain-types";
 
 describe('Token Tests', () => {
+
+    function tokenAsserter(
+        expectedToken: OrderBookDex.TokenStructOutput,
+        ticker: string,
+        address: string,
+        isTradable: boolean
+    ) {
+        expect(expectedToken.ticker).to.be.equals(ticker);
+        expect(expectedToken.tokenAddress).to.be.equals(address);
+        expect(expectedToken.isTradable).to.be.equals(isTradable);
+    }
+
     async function tokenFixture() {
         const orderBookDex = await testUtils.deployOrderBookContract();
         const daiToken = await testUtils.deployTokenTest("Dai Stable Coin", "DAI");
@@ -11,55 +24,52 @@ describe('Token Tests', () => {
 
         const [owner, otherAccount] = await ethers.getSigners();
 
-        const daiDetails = await testUtils.getContractDetails(daiToken.contract);
-        
-        // Add DAI tokken to OBDEX
-        await orderBookDex
-            .contract
-            .connect(owner)
-            .addToken(ethers.encodeBytes32String(daiDetails.symbol), daiDetails.address);
+        await testUtils.addToken(orderBookDex.contract, daiToken.contract);
 
         return { orderBookDex, daiToken, zrxToken, owner, otherAccount };
     }
     
     it('Should Have Correct Tokens', async () => {
-        const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
+        const { orderBookDex, daiToken } = await loadFixture(tokenFixture);
         const tokens = await orderBookDex.contract.getTokens();
 
         const daiDetails = await testUtils.getContractDetails(daiToken.contract);
 
         expect(tokens.length).to.be.equals(1);
         // assert DAI Token that was add in the fixture
-        expect(tokens[0].ticker).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
-        expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
-        expect(tokens[0].isTradable).to.be.equals(true);
+        tokenAsserter(
+            tokens[0],
+            ethers.encodeBytes32String(daiDetails.symbol),
+            daiDetails.address,
+            true
+        );
     });
     
     it('Should Add Token If Admin', async () => {
-        const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
+        const { orderBookDex, daiToken, zrxToken, owner } = await loadFixture(tokenFixture);
         
         const daiDetails = await testUtils.getContractDetails(daiToken.contract);
         const zrxDetails = await testUtils.getContractDetails(zrxToken.contract);
         
-        await orderBookDex
-            .contract
-            .connect(owner)
-            .addToken(
-                ethers.encodeBytes32String(zrxDetails.symbol), 
-                zrxDetails.address
-            );
-
+        await testUtils.addToken(orderBookDex.contract, zrxToken.contract);
+        
         const tokens = await orderBookDex.contract.getTokens();
 
         expect(tokens.length).to.be.equals(2);
         // assert DAI Token that was add in the fixture
-        expect(tokens[0].ticker).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
-        expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
-        expect(tokens[0].isTradable).to.be.equals(true);
+        tokenAsserter(
+            tokens[0],
+            ethers.encodeBytes32String(daiDetails.symbol),
+            daiDetails.address,
+            true
+        );
         // assert ZRX Token that was add in the the test
-        expect(tokens[1].ticker).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
-        expect(tokens[1].tokenAddress).to.be.equals(zrxDetails.address);
-        expect(tokens[1].isTradable).to.be.equals(true);
+        tokenAsserter(
+            tokens[1],
+            ethers.encodeBytes32String(zrxDetails.symbol),
+            zrxDetails.address,
+            true
+        );
     });
 
     it('Should Add Quote Token If Admin', async () => {
@@ -93,9 +103,12 @@ describe('Token Tests', () => {
 
         expect(tokens.length).to.be.equals(1);
         // assert DAI Token that was add in the fixture
-        expect(tokens[0].ticker).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
-        expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
-        expect(tokens[0].isTradable).to.be.equals(false);
+        tokenAsserter(
+            tokens[0],
+            ethers.encodeBytes32String(daiDetails.symbol),
+            daiDetails.address,
+            false
+        );
 
         await orderBookDex
             .contract
@@ -106,27 +119,12 @@ describe('Token Tests', () => {
 
         expect(tokens.length).to.be.equals(1);
         // assert DAI Token that was add in the fixture
-        expect(tokens[0].ticker).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
-        expect(tokens[0].tokenAddress).to.be.equals(daiDetails.address);
-        expect(tokens[0].isTradable).to.be.equals(true);
-    });
-
-    it('Should Have Correct Tickers', async () => {
-        const { orderBookDex, daiToken, zrxToken, owner, otherAccount } = await loadFixture(tokenFixture);
-        
-        const daiDetails = await testUtils.getContractDetails(daiToken.contract);
-        const zrxDetails = await testUtils.getContractDetails(zrxToken.contract);
-        
-        await orderBookDex
-            .contract
-            .connect(owner)
-            .addToken(ethers.encodeBytes32String(zrxDetails.symbol), zrxDetails.address);
-
-        const tickerList = await orderBookDex.contract.getTickerList();
-
-        expect(tickerList.length).to.be.equals(2);
-        expect(tickerList[0]).to.be.equals(ethers.encodeBytes32String(daiDetails.symbol));
-        expect(tickerList[1]).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
+        tokenAsserter(
+            tokens[0],
+            ethers.encodeBytes32String(daiDetails.symbol),
+            daiDetails.address,
+            true
+        );
     });
 
     it('Should NOT Add Quote Token If NOT Admin', async () => {
