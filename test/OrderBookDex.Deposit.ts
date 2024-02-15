@@ -4,26 +4,19 @@ import { ethers } from "hardhat";
 import * as testUtils from './TestUtils';
 
 describe('Deposit Balance', () => {
+    
     async function depositFixture() {
         const orderBookDex = await testUtils.deployOrderBookContract();
         const daiToken = await testUtils.deployTokenTest("Dai Stable Coin", "DAI");
 
         const [owner, trader] = await ethers.getSigners();
 
-        const daiDetails = await testUtils.getContractDetails(daiToken.contract);
-        
-        await orderBookDex
-            .contract
-            .connect(owner)
-            .addToken(
-                ethers.encodeBytes32String(daiDetails.symbol), 
-                daiDetails.address
-            );
+        await testUtils.addToken(orderBookDex.contract, daiToken.contract);
         
         return { orderBookDex, daiToken, owner, trader };
     }
 
-    it('Should deposit if token exists',async () => {
+    it('Should Deposit If Token Exists',async () => {
         const { orderBookDex, daiToken, owner, trader } = await loadFixture(depositFixture);
 
         const orderBookDexAddress = await orderBookDex.contract.getAddress();
@@ -71,7 +64,7 @@ describe('Deposit Balance', () => {
         expect(traderBalance.locked).to.be.equal(0);
     });
 
-    it('Should NOT deposit if token does NOT exists',async () => {
+    it('Should NOT Deposit If Token Does NOT Exists',async () => {
         const { orderBookDex, daiToken, owner, trader } = await loadFixture(depositFixture);
         const amountDeposit = ethers.parseUnits('1', 'ether');
 
