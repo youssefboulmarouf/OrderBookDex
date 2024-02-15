@@ -138,6 +138,8 @@ contract OrderBookDex {
         internal
         hasEnoughTokenToBuy(_amount, _price, _side) {
             lockOrderAmount(_ticker, _amount, _price, _side, ORDER_TYPE.LIMIT);
+            createOrder(_ticker, _amount, _price, _side, ORDER_TYPE.LIMIT);
+            sortOrders(_ticker, _side);
         }
     
     function createMarketOrder(bytes32 _ticker, uint _amount, ORDER_SIDE _side)  
@@ -162,6 +164,48 @@ contract OrderBookDex {
             balances[msg.sender][tokenToLock].free = balances[msg.sender][tokenToLock].free - amountToLock;
             balances[msg.sender][tokenToLock].locked = balances[msg.sender][tokenToLock].locked + amountToLock;
     }
+
+    function createOrder(bytes32 _ticker, uint _amount, uint _price, ORDER_SIDE _side, ORDER_TYPE _orderType) 
+        internal {
+            uint[] memory fills;
+            orderBook[_ticker][_side].push(
+                Order(nextOrderId, msg.sender, _side, _orderType, _ticker, _amount, fills, _price, block.timestamp)
+            );
+            nextOrderId = nextOrderId + 1;
+        }
+    
+    function sortOrders(bytes32 _ticker, ORDER_SIDE _side) 
+        internal {
+        
+            Order[] storage orders = orderBook[_ticker][_side];
+            uint index = (orders.length > 0) ? (orders.length - 1) : 0;
+            
+            if (_side == ORDER_SIDE.SELL) {
+                // SELL orders will be matched against Buy orders 
+                // For the market buyers, the best price is the lowest price
+                // SORT SELL ORDERS BY ASCENDING PRICES [4, 5, 6]
+                while(index > 0) {
+                    if (orders[index - 1].price > orders[index].price) {
+                        Order memory order = orders[index - 1];
+                        orders[index - 1] = orders[index];
+                        orders[index] = order;
+                    }
+                    index = index - 1;
+                }
+            } else {
+                // BUY orders will be matched against Sell orders 
+                // For the market Sellers, the best price is the highest price
+                // SORT BUY ORDERS BY DESCENDING PRICES [3, 2, 1]
+                while(index > 0) {
+                    if (orders[index - 1].price < orders[index].price) {
+                        Order memory order = orders[index - 1];
+                        orders[index - 1] = orders[index];
+                        orders[index] = order;
+                    }
+                    index = index - 1;       
+                }
+            }
+        }
     
     modifier onlyAdmin() {
         require(admin == msg.sender, "Unauthorized!");
