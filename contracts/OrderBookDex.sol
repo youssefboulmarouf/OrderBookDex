@@ -222,18 +222,19 @@ contract OrderBookDex {
 
     function matchOrders(Order storage newOrder) 
         internal {
-            
+
         }
     
+    function amountFilled(Order memory order) 
+        internal 
+        returns(uint) {
+            uint filledAmount;
+            
+            for (uint i; i < order.fills.length; i = i + 1) {
+                filledAmount = filledAmount + order.fills[i];
+            }
 
-    function amountFilled(Order memory _oppositeOrder) internal pure returns(uint) {
-        uint filledAmount;
-        
-        for (uint i; i < _oppositeOrder.fills.length; i = i + 1) {
-            filledAmount = filledAmount + _oppositeOrder.fills[i];
-        }
-
-        return filledAmount;
+            return filledAmount;
     }
 
     modifier onlyAdmin() {
