@@ -146,8 +146,9 @@ contract OrderBookDex {
         internal
         hasEnoughTokenToBuy(_amount, _price, _side) {
             lockOrderAmount(_ticker, _amount, _price, _side, ORDER_TYPE.LIMIT);
-            createOrder(_ticker, _amount, _price, _side, ORDER_TYPE.LIMIT);
+            Order storage newOrder = createOrder(_ticker, _amount, _price, _side, ORDER_TYPE.LIMIT);
             sortOrders(_ticker, _side);
+            matchOrders(newOrder);
         }
     
     function createMarketOrder(bytes32 _ticker, uint _amount, ORDER_SIDE _side)  
@@ -174,12 +175,16 @@ contract OrderBookDex {
     }
 
     function createOrder(bytes32 _ticker, uint _amount, uint _price, ORDER_SIDE _side, ORDER_TYPE _orderType) 
-        internal {
+        internal 
+        returns (Order storage) {
             uint[] memory fills;
-            orderBook[_ticker][_side].push(
-                Order(nextOrderId, msg.sender, _side, _orderType, _ticker, _amount, fills, _price, block.timestamp)
-            );
+
             nextOrderId = nextOrderId + 1;
+
+            Order memory newOrder = Order(nextOrderId, msg.sender, _side, _orderType, _ticker, _amount, fills, _price, block.timestamp);
+            orderBook[_ticker][_side].push(newOrder);
+            
+            return orderBook[_ticker][_side][(orderBook[_ticker][_side].length - 1)];
         }
     
     function sortOrders(bytes32 _ticker, ORDER_SIDE _side) 
@@ -214,7 +219,23 @@ contract OrderBookDex {
                 }
             }
         }
+
+    function matchOrders(Order storage newOrder) 
+        internal {
+            
+        }
     
+
+    function amountFilled(Order memory _oppositeOrder) internal pure returns(uint) {
+        uint filledAmount;
+        
+        for (uint i; i < _oppositeOrder.fills.length; i = i + 1) {
+            filledAmount = filledAmount + _oppositeOrder.fills[i];
+        }
+
+        return filledAmount;
+    }
+
     modifier onlyAdmin() {
         require(admin == msg.sender, "Unauthorized!");
         _;
