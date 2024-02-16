@@ -106,7 +106,7 @@ describe('Limit ORders', () => {
 
     });
 
-    it('Should Create SELL Limit Orders And Sort Then',async () => {
+    it('Should Sort Limit Orders By Price',async () => {
         const { orderBookDex, daiToken, zrxToken } = await loadFixture(LimitOrdersFixture);
         const daiDetails = await testUtils.getContractDetails(daiToken.contract);
         const zrxDetails = await testUtils.getContractDetails(zrxToken.contract);
@@ -183,7 +183,7 @@ describe('Limit ORders', () => {
         expect(sellOrders[2].price).to.be.equals(3);
     });
 
-    it('Should Create BUY Limit Orders And Sort Then',async () => {
+    it('Should Sort Limit Orders By Date When Same Price',async () => {
         const { orderBookDex, daiToken, zrxToken } = await loadFixture(LimitOrdersFixture);
         const daiDetails = await testUtils.getContractDetails(daiToken.contract);
         const zrxDetails = await testUtils.getContractDetails(zrxToken.contract);
@@ -212,18 +212,29 @@ describe('Limit ORders', () => {
             .placeOrder({
                 ticker: ethers.encodeBytes32String(zrxDetails.symbol),
                 amount: 1,
+                price: 3,
+                orderSide: ORDER_SIDE.BUY,
+                orderType: ORDER_TYPE.LIMIT
+            });
+        
+        await orderBookDex
+            .contract
+            .connect(trader1)
+            .placeOrder({
+                ticker: ethers.encodeBytes32String(zrxDetails.symbol),
+                amount: 1,
                 price: 1,
                 orderSide: ORDER_SIDE.BUY,
                 orderType: ORDER_TYPE.LIMIT
             });
-            
+
         await orderBookDex
             .contract
             .connect(trader2)
             .placeOrder({
                 ticker: ethers.encodeBytes32String(zrxDetails.symbol),
                 amount: 2,
-                price: 2,
+                price: 3,
                 orderSide: ORDER_SIDE.BUY,
                 orderType: ORDER_TYPE.LIMIT
             });
@@ -233,30 +244,38 @@ describe('Limit ORders', () => {
             ORDER_SIDE.BUY
         );
         
-        expect(buyOrders.length).to.be.equals(3);
+        expect(buyOrders.length).to.be.equals(4);
         
-        expect(buyOrders[0].traderAddress).to.be.equals(trader3.address);
+        expect(buyOrders[0].traderAddress).to.be.equals(trader1.address);
         expect(buyOrders[0].orderSide).to.be.equals(ORDER_SIDE.BUY);
+        expect(buyOrders[0].orderType).to.be.equals(ORDER_TYPE.LIMIT);
         expect(buyOrders[0].ticker).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
-        expect(buyOrders[0].amount).to.be.equals(3);
+        expect(buyOrders[0].amount).to.be.equals(1);
         expect(buyOrders[0].fills.length).to.be.equals(0);
-        expect(buyOrders[0].price).to.be.equals(3);
-        
-        expect(buyOrders[1].traderAddress).to.be.equals(trader2.address);
-        expect(buyOrders[1].orderSide).to.be.equals(ORDER_SIDE.BUY);
-        expect(buyOrders[1].orderType).to.be.equals(ORDER_TYPE.LIMIT);
-        expect(buyOrders[1].ticker).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
-        expect(buyOrders[1].amount).to.be.equals(2);
-        expect(buyOrders[1].fills.length).to.be.equals(0);
-        expect(buyOrders[1].price).to.be.equals(2);
+        expect(buyOrders[0].price).to.be.equals(1);
 
+        expect(buyOrders[1].traderAddress).to.be.equals(trader3.address);
+        expect(buyOrders[1].orderSide).to.be.equals(ORDER_SIDE.BUY);
+        expect(buyOrders[1].ticker).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
+        expect(buyOrders[1].amount).to.be.equals(3);
+        expect(buyOrders[1].fills.length).to.be.equals(0);
+        expect(buyOrders[1].price).to.be.equals(3);
+        
         expect(buyOrders[2].traderAddress).to.be.equals(trader1.address);
         expect(buyOrders[2].orderSide).to.be.equals(ORDER_SIDE.BUY);
         expect(buyOrders[2].orderType).to.be.equals(ORDER_TYPE.LIMIT);
         expect(buyOrders[2].ticker).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
         expect(buyOrders[2].amount).to.be.equals(1);
         expect(buyOrders[2].fills.length).to.be.equals(0);
-        expect(buyOrders[2].price).to.be.equals(1);
+        expect(buyOrders[2].price).to.be.equals(3);
+
+        expect(buyOrders[3].traderAddress).to.be.equals(trader2.address);
+        expect(buyOrders[3].orderSide).to.be.equals(ORDER_SIDE.BUY);
+        expect(buyOrders[3].orderType).to.be.equals(ORDER_TYPE.LIMIT);
+        expect(buyOrders[3].ticker).to.be.equals(ethers.encodeBytes32String(zrxDetails.symbol));
+        expect(buyOrders[3].amount).to.be.equals(2);
+        expect(buyOrders[3].fills.length).to.be.equals(0);
+        expect(buyOrders[3].price).to.be.equals(3);
     });
 
     it('Should Create Limit Orders And Lock Correct Amount',async () => {
