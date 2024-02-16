@@ -213,6 +213,7 @@ contract OrderBookDex {
     
     function amountFilled(Order memory order) 
         internal 
+        pure
         returns(uint) {
             uint filledAmount;
             
