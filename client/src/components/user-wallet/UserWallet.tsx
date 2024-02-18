@@ -117,12 +117,13 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
                                 value={amount} 
                                 onChange={handleAmountChange}
                             />
+                            <span className="input-addon">{ethers.decodeBytes32String(props.selectedAsset.ticker)}</span>
                         </div>
                     </Form.Group>
 
                     <Button 
                         className='place-order-button button' 
-                        type="submit" 
+                        type='submit'
                         variant={(walletAction === 'Deposit') ? 'primary' : 'warning'}
                     >
                         Transfer Tokens

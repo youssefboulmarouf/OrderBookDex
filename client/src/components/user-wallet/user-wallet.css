@@ -1,9 +1,3 @@
 .user-wallet { 
     height: 30vh;
 }
-
-.balance-title-box {
-    padding-top: 10px;
-    display: flex;
-    justify-content: left;
-}
