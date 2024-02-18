@@ -15,6 +15,7 @@ import Trades from './components/trades/Trades';
 import PlaceOrder from './components/place-order/PlaceOrder';
 import OrderBookDexContract from './services/OrderBookDexContract';
 import { TokenProps } from './components/common/common-props';
+import { AppProvider } from './AppContext';
 
 interface AppProps {
     provider: ethers.BrowserProvider;
@@ -60,45 +61,32 @@ const App: React.FC<AppProps> = (props) => {
     return (
         <Container fluid className="App">
             <NavBar orderBookDexContract={props.orderBookDexContract}/>
-            <Row>
-                <Col sm={3}>
-                    <PlaceOrder 
-                        tokens={tokens}
-                        assetToken={assetToken}
-                        setAssetToken={setSelectedAssetToken}
-                        account={props.account}
-                        orderBookDexContract={props.orderBookDexContract}
-                    />
-                </Col>
-                <Col sm={3}>
-                    <OrderBook
-                        selectedAsset={assetToken}
-                        account={props.account}
-                        orderBookDexContract={props.orderBookDexContract}
-                    />
-                </Col>
-                <Col sm={6}>
-                    <Chart />
-                </Col>
-            </Row>
-            <Row>
-                <Col sm={3}>
-                    <UserWallet
-                        tokens={tokens}
-                        selectedAsset={assetToken}
-                        account={props.account}
-                        provider={props.provider}
-                        orderBookDexContract={props.orderBookDexContract}
-                    />
-                </Col>
-                <Col sm={9}>
-                    <Trades
-                        selectedAsset={assetToken}
-                        account={props.account}
-                        orderBookDexContract={props.orderBookDexContract}
-                    />
-                </Col>
-            </Row>
+            <AppProvider 
+                tokens={tokens} 
+                selectedAsset={assetToken} 
+                account={props.account}
+                orderBookDexContract={props.orderBookDexContract}
+            >
+                <Row>
+                    <Col sm={3}>
+                        <PlaceOrder setAssetToken={setSelectedAssetToken}/>
+                    </Col>
+                    <Col sm={3}>
+                        <OrderBook/>
+                    </Col>
+                    <Col sm={6}>
+                        <Chart />
+                    </Col>
+                </Row>
+                <Row>
+                    <Col sm={3}>
+                        <UserWallet provider={props.provider}/>
+                    </Col>
+                    <Col sm={9}>
+                        <Trades/>
+                    </Col>
+                </Row>
+            </AppProvider>
         </Container>
     );
 }

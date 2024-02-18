@@ -5,18 +5,13 @@ import Button from 'react-bootstrap/Button';
 import { XSquareFill } from 'react-bootstrap-icons';
 
 import './trades.css';
-import { TokenProps, Order, ORDER_SIDE } from '../common/common-props';
-import { Signer, ethers } from 'ethers';
-import OrderBookDexContract from '../../services/OrderBookDexContract';
+import { Order, ORDER_SIDE } from '../common/common-props';
+import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
+import { useAppContext } from '../../AppContext';
 
-interface TradesProps {
-    selectedAsset: TokenProps;
-    account: Signer;
-    orderBookDexContract: OrderBookDexContract;
-}
-
-const Trades: React.FC<TradesProps> = (props) => {
+const Trades: React.FC = () => {
+    const { tokens, selectedAsset, account, orderBookDexContract } = useAppContext();
     const [currentTokensOrders, setCurrentTokensOrders] = useState<Order[]>([]);
 
     const cancelTrade = (e: React.FormEvent, order: Order) => {
@@ -42,15 +37,15 @@ const Trades: React.FC<TradesProps> = (props) => {
     }
 
     const loadOrders = async () => {
-        const buyOrders = await props.orderBookDexContract.getOrders(props.selectedAsset, ORDER_SIDE.BUY);
-        const sellOrders = await props.orderBookDexContract.getOrders(props.selectedAsset, ORDER_SIDE.SELL);
-        const address = await props.account.getAddress();
+        const buyOrders = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.BUY);
+        const sellOrders = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.SELL);
+        const address = await account.getAddress();
         setCurrentTokensOrders(ectractMyOrder(buyOrders, address).concat(ectractMyOrder(sellOrders, address)))
     }
 
     useEffect(() => {
         loadOrders();
-    }, [props.selectedAsset]);
+    }, [selectedAsset]);
 
     return (
         <div className="default-box-layout trades">

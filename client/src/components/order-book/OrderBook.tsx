@@ -1,17 +1,11 @@
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import { Table } from 'react-bootstrap';
-import { TokenProps, Order, ORDER_SIDE } from '../common/common-props';
-import { Signer, ethers } from 'ethers';
-import OrderBookDexContract from '../../services/OrderBookDexContract';
+import { Order, ORDER_SIDE } from '../common/common-props';
+import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
+import { useAppContext } from '../../AppContext';
 import './order-book.css';
-
-interface OrderBookProps {
-    selectedAsset: TokenProps;
-    account: Signer;
-    orderBookDexContract: OrderBookDexContract;
-}
 
 interface AggregatedOrder {
     price: number;
@@ -19,14 +13,15 @@ interface AggregatedOrder {
     orders: Order[];
 }
 
-const OrderBook: React.FC<OrderBookProps> = (props) => {
+const OrderBook: React.FC = () => {
+    const { tokens, selectedAsset, account, orderBookDexContract } = useAppContext();
 
     const [aggregatedBuyOrders, setAggregatedBuyOrders] = useState<AggregatedOrder[]>([]);
     const [aggregatedSellOrders, setAggregatedSellOrders] = useState<AggregatedOrder[]>([]);
 
     const loadOrders = async () => {
-        const buyOrders = await props.orderBookDexContract.getOrders(props.selectedAsset, ORDER_SIDE.BUY);
-        const sellOrders = await props.orderBookDexContract.getOrders(props.selectedAsset, ORDER_SIDE.SELL);
+        const buyOrders = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.BUY);
+        const sellOrders = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.SELL);
         setAggregatedBuyOrders(aggregateOrdersByPrice(buyOrders))
         setAggregatedSellOrders(aggregateOrdersByPrice(sellOrders))
     }
@@ -60,7 +55,7 @@ const OrderBook: React.FC<OrderBookProps> = (props) => {
 
     useEffect(() => {
         loadOrders();
-    }, [props.selectedAsset]);
+    }, [selectedAsset]);
 
     return (
         <div className="default-box-layout order-book">

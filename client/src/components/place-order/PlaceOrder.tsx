@@ -5,18 +5,17 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Form from 'react-bootstrap/Form';
 import './place-order.css';
-import { Signer, ethers } from 'ethers';
-import OrderBookDexContract from '../../services/OrderBookDexContract';
+import { ethers } from 'ethers';
+import { useAppContext } from '../../AppContext';
+
 
 interface PlaceOrderProps {
-    tokens: TokenProps[];
-    assetToken: TokenProps;
     setAssetToken: (assetToken: TokenProps) => void;
-    account: Signer;
-    orderBookDexContract: OrderBookDexContract;
 }
 
 const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
+    const { tokens, selectedAsset, account, orderBookDexContract } = useAppContext();
+
     const [buySellButton, setBuySellButton] = useState('buy');
     const [limitMarketButton, setLimitMarketButton] = useState('limit');
     const [price, setPrice] = useState<number>(0);
@@ -54,8 +53,8 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
             <div className='title-box'>MARKET</div>
             <div className='inner-box'>
                 <MarketDropDown 
-                    tokens={props.tokens}
-                    assetToken={props.assetToken}
+                    tokens={tokens}
+                    assetToken={selectedAsset}
                     setAssetToken={props.setAssetToken}
                 />
 
@@ -101,7 +100,7 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
                                 value={amount}
                                 onChange={handleAmountChange}
                             />
-                            <span className="input-addon">{ethers.decodeBytes32String(props.assetToken.ticker)}</span>
+                            <span className="input-addon">{ethers.decodeBytes32String(selectedAsset.ticker)}</span>
                         </div>
                     </Form.Group>
 
