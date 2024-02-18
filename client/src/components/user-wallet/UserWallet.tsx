@@ -9,21 +9,14 @@ import WalletAction from './WalletAction';
 import './user-wallet.css';
 import { useAppContext } from '../../AppContext';
 
-interface UserWalletProps {
-    provider: ethers.BrowserProvider;
-}
-
-const UserWallet: React.FC<UserWalletProps> = (props) =>{
-    const { tokens, selectedAsset, account, orderBookDexContract } = useAppContext();
+const UserWallet: React.FC = () =>{
+    const { tokens, selectedAsset, account, orderBookDexContract, refreshTrigger } = useAppContext();
 
     const [walletAction, setWalletAction] = useState('Deposit');
     
     const [assetDexBalance, setAssetDexBalance] = useState<TokenDexBalance>();
     const [daiDexBalance, setDaiDexBalance] = useState<TokenDexBalance>();
-    
-    const [tokenContract, setTokenContract] = useState<TokenContract>();
-    const [tokenBalance, setTokenBalance] = useState<BigInt>();
-    
+        
     const [amount, setAmount] = useState('');
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,13 +41,11 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
             );
         }
         refreshDexBalance(selectedAsset);
-        setTokenBalance(await tokenContract?.getBalance(account));
     };
 
     const refreshDexBalance = async (token: TokenProps) => {
         const balance = await orderBookDexContract.getBalance(token, account)
         setAssetDexBalance(balance);
-
 
         const dai: TokenProps[] = tokens.filter(token => 
             ethers.decodeBytes32String(token.ticker) == 'DAI'
@@ -66,18 +57,11 @@ const UserWallet: React.FC<UserWalletProps> = (props) =>{
     useEffect(() => {
         const getAssetDexBalance = async () => {
             refreshDexBalance(selectedAsset);
-            setTokenContract(new TokenContract(props.provider, selectedAsset.tokenAddress));
-            setTokenBalance(await tokenContract?.getBalance(account));
         }
         getAssetDexBalance();
     }, [selectedAsset]);
 
-    useEffect(() => {
-        const getWalletBalance = async () => {
-            setTokenBalance(await tokenContract?.getBalance(account));
-        }
-        getWalletBalance();
-    }, [tokenContract]);
+    useEffect(() => {console.log('UserWallet triggerBalanceRefresh')}, [refreshTrigger]);
 
     return (
         <div className='default-box-layout user-wallet'>
