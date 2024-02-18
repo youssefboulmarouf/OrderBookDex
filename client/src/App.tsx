@@ -86,7 +86,11 @@ const App: React.FC<AppProps> = (props) => {
                     />
                 </Col>
                 <Col sm={9}>
-                    <Trades />
+                    <Trades
+                        selectedAsset={assetToken}
+                        account={props.account}
+                        provider={props.provider}
+                        orderBookDexContract={props.orderBookDexContract}/>
                 </Col>
             </Row>
         </Container>
