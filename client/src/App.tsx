@@ -66,10 +66,16 @@ const App: React.FC<AppProps> = (props) => {
                         tokens={tokens}
                         assetToken={assetToken}
                         setAssetToken={setSelectedAssetToken}
+                        account={props.account}
+                        orderBookDexContract={props.orderBookDexContract}
                     />
                 </Col>
                 <Col sm={3}>
-                    <OrderBook />
+                    <OrderBook
+                        selectedAsset={assetToken}
+                        account={props.account}
+                        orderBookDexContract={props.orderBookDexContract}
+                    />
                 </Col>
                 <Col sm={6}>
                     <Chart />
@@ -89,8 +95,8 @@ const App: React.FC<AppProps> = (props) => {
                     <Trades
                         selectedAsset={assetToken}
                         account={props.account}
-                        provider={props.provider}
-                        orderBookDexContract={props.orderBookDexContract}/>
+                        orderBookDexContract={props.orderBookDexContract}
+                    />
                 </Col>
             </Row>
         </Container>
