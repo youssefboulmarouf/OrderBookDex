@@ -13,7 +13,6 @@ import { useEffect, useState } from 'react';
 interface TradesProps {
     selectedAsset: TokenProps;
     account: Signer;
-    provider: ethers.BrowserProvider;
     orderBookDexContract: OrderBookDexContract;
 }
 
