@@ -8,13 +8,12 @@ import './place-order.css';
 import { ethers } from 'ethers';
 import { useAppContext } from '../../AppContext';
 
-
 interface PlaceOrderProps {
     setAssetToken: (assetToken: TokenProps) => void;
 }
 
 const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
-    const { tokens, selectedAsset, account, orderBookDexContract } = useAppContext();
+    const { tokens, selectedAsset, triggerBalanceRefresh } = useAppContext();
 
     const [buySellButton, setBuySellButton] = useState('buy');
     const [limitMarketButton, setLimitMarketButton] = useState('limit');
@@ -40,8 +39,10 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
         setTotal(+price * +amount)
     }
 
-    const handleSubmitOrder = async (event: React.FormEvent<HTMLFormElement>) => {
+    const createOrder = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        console.log('createOrder')
+        triggerBalanceRefresh();
     }
 
     useEffect(() => {
@@ -81,7 +82,7 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
                     >Market</Button>
                 </ButtonGroup>
 
-                <Form onSubmit={handleSubmitOrder}>
+                <Form onSubmit={createOrder}>
                     <Form.Group className="mb-3 custom-input-group">
                         <div className="input-wrapper">
                             <span className="custom-placeholder">Price</span>

@@ -14,7 +14,7 @@ interface AggregatedOrder {
 }
 
 const OrderBook: React.FC = () => {
-    const { tokens, selectedAsset, account, orderBookDexContract } = useAppContext();
+    const { selectedAsset, orderBookDexContract, refreshTrigger } = useAppContext();
 
     const [aggregatedBuyOrders, setAggregatedBuyOrders] = useState<AggregatedOrder[]>([]);
     const [aggregatedSellOrders, setAggregatedSellOrders] = useState<AggregatedOrder[]>([]);
@@ -56,6 +56,8 @@ const OrderBook: React.FC = () => {
     useEffect(() => {
         loadOrders();
     }, [selectedAsset]);
+
+    useEffect(() => {console.log('OrderBook triggerBalanceRefresh')}, [refreshTrigger]);
 
     return (
         <div className="default-box-layout order-book">

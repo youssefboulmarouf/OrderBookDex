@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { useAppContext } from '../../AppContext';
 
 const Trades: React.FC = () => {
-    const { tokens, selectedAsset, account, orderBookDexContract } = useAppContext();
+    const { selectedAsset, account, orderBookDexContract, refreshTrigger } = useAppContext();
     const [currentTokensOrders, setCurrentTokensOrders] = useState<Order[]>([]);
 
     const cancelTrade = (e: React.FormEvent, order: Order) => {
@@ -46,6 +46,8 @@ const Trades: React.FC = () => {
     useEffect(() => {
         loadOrders();
     }, [selectedAsset]);
+
+    useEffect(() => {console.log('Trades triggerBalanceRefresh')}, [refreshTrigger]);
 
     return (
         <div className="default-box-layout trades">

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
 import OrderBookDexContract from './services/OrderBookDexContract';
 import { Signer } from 'ethers';
 import { TokenProps } from './components/common/common-props';
@@ -8,6 +8,8 @@ interface AppContextType {
     selectedAsset: TokenProps;
     account: Signer;
     orderBookDexContract: OrderBookDexContract;
+    refreshTrigger: number;
+    triggerBalanceRefresh: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -28,9 +30,17 @@ interface AppProviderProps {
     orderBookDexContract: OrderBookDexContract;
 }
 
-export const AppProvider: React.FC<AppProviderProps> = ({ children, tokens, selectedAsset, account, orderBookDexContract }) => {
+export const AppProvider: React.FC<AppProviderProps> = (
+    { children, tokens, selectedAsset, account, orderBookDexContract }
+) => {
+    const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+
+    const triggerBalanceRefresh = useCallback(() => {
+        setRefreshTrigger(oldTrigger => oldTrigger + 1);
+    }, []);
+
     return (
-        <AppContext.Provider value={{ tokens, selectedAsset, account, orderBookDexContract }}>
+        <AppContext.Provider value={{ tokens, selectedAsset, account, orderBookDexContract, refreshTrigger, triggerBalanceRefresh }}>
             {children}
         </AppContext.Provider>
     );
