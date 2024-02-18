@@ -98,6 +98,14 @@ async function main() {
         orderType: ORDER_TYPE.LIMIT
     });
 
+    await orderBookDex.connect(trader1).placeOrder({
+        ticker: ethers.encodeBytes32String(zrxSymbol),
+        amount: ethers.parseUnits('1', 'ether'),
+        price: 40,
+        orderSide: ORDER_SIDE.SELL,
+        orderType: ORDER_TYPE.LIMIT
+    });
+
     const adresses = {
         OBDex: orderBookDexAddress,
     }
