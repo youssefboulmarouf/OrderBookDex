@@ -80,7 +80,7 @@ const App: React.FC<AppProps> = (props) => {
                 </Row>
                 <Row>
                     <Col sm={3}>
-                        <UserWallet provider={props.provider}/>
+                        <UserWallet/>
                     </Col>
                     <Col sm={9}>
                         <Trades/>
