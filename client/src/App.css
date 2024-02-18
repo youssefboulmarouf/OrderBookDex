@@ -53,6 +53,10 @@
     align-items: center;
 }
 
+.custom-input-group {
+    position: relative;
+}
+
 .input-wrapper {
     position: relative;
     display: flex;
@@ -60,21 +64,40 @@
     margin-top: 10px;
 }
 
-.custom-placeholder {
-    position: absolute;
-    pointer-events: none;
-    color: #6c757d;
-    left: 10px;
-}
-
 .custom-input-group .form-control {
     padding-left: 80px; /* Space for custom placeholder */
+    padding-right: 80px; /* Space for 'Assets' text */
     text-align: right;
+}
+
+.custom-placeholder, .input-addon {
+    position: absolute;
+    pointer-events: none; /* Makes it unclickable */
+    color: #6c757d; /* Bootstrap's default placeholder color */
+}
+
+.custom-placeholder {
+    left: 10px; /* Adjust as needed */
+}
+
+.input-addon {
+    right: 10px; /* Adjust as needed */
+    margin-top: 1.5rem;
+    transform: translateY(-50%);
 }
 
 .place-order-button {
     width: 100%;
     border-radius: 10px;
+    font-size: 1.25rem; /* Larger font size */
+}
+
+.sell-row {
+    background-color: rgba(231, 102, 102, 0.425) !important;
+}
+
+.buy-row {
+    background-color: rgba(113, 231, 102, 0.425) !important;
 }
 
 .custom-input-group .form-control::-webkit-inner-spin-button,
