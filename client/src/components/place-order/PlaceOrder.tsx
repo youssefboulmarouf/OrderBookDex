@@ -1,24 +1,126 @@
 import React, { useState, useEffect } from 'react';
 import MarketDropDown from './MarketDropDown';
 import { TokenProps } from '../common/common-props';
+import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Form from 'react-bootstrap/Form';
 import './place-order.css';
+import { Signer, ethers } from 'ethers';
+import OrderBookDexContract from '../../services/OrderBookDexContract';
 
 interface PlaceOrderProps {
     tokens: TokenProps[];
     assetToken: TokenProps;
     setAssetToken: (assetToken: TokenProps) => void;
+    account: Signer;
+    orderBookDexContract: OrderBookDexContract;
 }
 
 const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
+    const [buySellButton, setBuySellButton] = useState('buy');
+    const [limitMarketButton, setLimitMarketButton] = useState('limit');
+    const [price, setPrice] = useState<number>(0);
+    const [amount, setAmount] = useState<number>(0);
+    const [total, setTotal] = useState<number>(0);
+
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+            setPrice(+value);
+        }
+    };
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+            setAmount(+value);
+        }
+    };
+
+    const conputeTotal = () => {
+        setTotal(+price * +amount)
+    }
+
+    const handleSubmitOrder = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+    }
+
+    useEffect(() => {
+        conputeTotal();
+    }, [amount, price]);
+
     return (
         <div className="default-box-layout place-order">
-            <div className='title-box'>MARKETS</div>
+            <div className='title-box'>MARKET</div>
             <div className='inner-box'>
                 <MarketDropDown 
                     tokens={props.tokens}
                     assetToken={props.assetToken}
                     setAssetToken={props.setAssetToken}
                 />
+
+                <ButtonGroup className='button-group'>
+                    <Button className='button'
+                        variant={buySellButton === 'buy' ? 'success' : ''} 
+                        onClick={() => setBuySellButton('buy')}
+                    >BUY</Button>
+                    
+                    <Button className='button'
+                        variant={buySellButton === 'sell' ? 'danger' : ''} 
+                        onClick={() => setBuySellButton('sell')}
+                    >SELL</Button>
+                </ButtonGroup>
+
+                <ButtonGroup className='button-group'>
+                    <Button className='button'
+                        variant={limitMarketButton === 'limit' ? 'dark' : ''}
+                        onClick={() => setLimitMarketButton('limit')}
+                    >Limit</Button>
+                    <Button className='button'
+                        variant={limitMarketButton === 'market' ? 'dark' : ''}
+                        onClick={() => setLimitMarketButton('market')}
+                    >Market</Button>
+                </ButtonGroup>
+
+                <Form onSubmit={handleSubmitOrder}>
+                    <Form.Group className="mb-3 custom-input-group">
+                        <div className="input-wrapper">
+                            <span className="custom-placeholder">Price</span>
+                            <Form.Control 
+                                value={price}
+                                onChange={handlePriceChange}
+                            />
+                            <span className="input-addon">DAI</span>
+                        </div>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3 custom-input-group">
+                        <div className="input-wrapper">
+                            <span className="custom-placeholder">Amount</span>
+                            <Form.Control 
+                                value={amount}
+                                onChange={handleAmountChange}
+                            />
+                            <span className="input-addon">{ethers.decodeBytes32String(props.assetToken.ticker)}</span>
+                        </div>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3 custom-input-group">
+                        <div className="input-wrapper">
+                            <span className="custom-placeholder">Total</span>
+                            <Form.Control disabled value={total}/>
+                            <span className="input-addon">DAI</span>
+                        </div>
+                    </Form.Group>
+
+                    <Button 
+                        className='place-order-button button' 
+                        variant='primary' 
+                        type='submit'
+                    >
+                        Place Order
+                    </Button>
+                </Form>
             </div>
         </div>
     );
