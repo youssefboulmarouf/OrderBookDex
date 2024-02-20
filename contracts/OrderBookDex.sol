@@ -40,10 +40,23 @@ contract OrderBookDex {
         ORDER_TYPE orderType;
     }
 
+    event NewTrade( 
+        uint tradeId, 
+        uint buyOrderId, 
+        uint sellOrderId, 
+        bytes32 indexed ticker, 
+        address indexed buyerTrader, 
+        address indexed sellerTraderr, 
+        uint amount, 
+        uint price, 
+        uint date
+    );
+
     address public admin;
     bytes32[] public tickerList;
     bytes32 public quoteTicker;
     uint public nextOrderId;
+    uint public nextTradeId;
 
     mapping (bytes32 => Token) public tokens;
     mapping (address => mapping (bytes32 => Balance)) public balances;
@@ -223,6 +236,32 @@ contract OrderBookDex {
             }
 
             return filledAmount;
+        }
+    
+    function emitNewTradeEvent(Order storage _orderToMatch, Order storage _oppositeOrder, uint _matched)
+        internal {
+            Order memory buyOrder;
+            Order memory sellOrder;
+
+            if (_orderToMatch.orderSide == ORDER_SIDE.BUY) {
+                buyOrder = _orderToMatch;
+                sellOrder = _oppositeOrder;
+            } else {
+                buyOrder = _oppositeOrder;
+                sellOrder = _orderToMatch;
+            }
+            
+            emit NewTrade(
+                nextTradeId, 
+                buyOrder.id, 
+                sellOrder.id, 
+                _orderToMatch.ticker, 
+                buyOrder.traderAddress, 
+                sellOrder.traderAddress, 
+                _matched, 
+                _oppositeOrder.price, 
+                block.timestamp
+            );
         }
 
     modifier onlyAdmin() {
