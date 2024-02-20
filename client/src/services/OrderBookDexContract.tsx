@@ -24,7 +24,7 @@ class OrderBookDexContract {
         return quoteTicker;
     }
 
-    async setQuoteTicker(token: TokenProps): Promise<void> {
+    async setQuoteTicker(token: TokenProps) {
         try {
             const tx =  await this.contract.setQuoteTicker(token.ticker);
             await tx.wait();
@@ -43,7 +43,7 @@ class OrderBookDexContract {
         return tokens
     }
 
-    async addToken(token: TokenProps): Promise<void> {
+    async addToken(token: TokenProps) {
         try {
             const tx =  await this.contract.addToken(
                 ethers.encodeBytes32String(token.ticker),
@@ -55,7 +55,7 @@ class OrderBookDexContract {
         }
     }
 
-    async disableToken(token: TokenProps): Promise<void> {
+    async disableToken(token: TokenProps) {
         try {
             const tx =  await this.contract.disableTokenTrading(token.ticker);
             await tx.wait();
@@ -64,7 +64,7 @@ class OrderBookDexContract {
         }
     }
 
-    async enableToken(token: TokenProps): Promise<void> {
+    async enableToken(token: TokenProps) {
         try {
             const tx =  await this.contract.enableTokenTrading(token.ticker);
             await tx.wait();
@@ -73,7 +73,6 @@ class OrderBookDexContract {
         }
     }
 
-    // TODO: Adjut the method to follow getOrders
     async getBalance(token: TokenProps, signer: Signer): Promise<TokenDexBalance> {
         let balance: TokenDexBalance = {free: BigInt(0), locked: BigInt(0)};
         
@@ -88,7 +87,7 @@ class OrderBookDexContract {
         return balance;
     }
 
-    async deposit(token: TokenProps, amount: BigInt): Promise<void> {
+    async deposit(token: TokenProps, amount: BigInt) {
         try {
             const tx = await this.contract.deposit(token.ticker, amount);
             await tx.wait();
@@ -97,7 +96,7 @@ class OrderBookDexContract {
         }
     }
 
-    async withdraw(token: TokenProps, amount: BigInt): Promise<void> {
+    async withdraw(token: TokenProps, amount: BigInt) {
         try {
             const tx = await this.contract.withdraw(token.ticker, amount);
             await tx.wait();
@@ -122,7 +121,7 @@ class OrderBookDexContract {
         price: number, 
         side: ORDER_SIDE, 
         type: ORDER_TYPE
-    ): Promise<void> {
+    ) {
         try {
             const tx = await this.contract.placeOrder({
                 ticker: token.ticker,
