@@ -25,7 +25,6 @@ interface AppProps {
 
 const App: React.FC<AppProps> = (props) => {
     const [tokens, setTokens] = useState<TokenProps[]>([]);
-    const [selectedAsset, setSelectedAsset] = useState<string>('');
     const [assetToken, setAssetToken] = useState<TokenProps>();
 
     const loadTokens = async () => {
@@ -50,10 +49,6 @@ const App: React.FC<AppProps> = (props) => {
         initDefaultToken();
     }, [tokens]);
 
-    const setSelectedAssetToken = (assetToken: TokenProps) => {
-        setAssetToken(assetToken);
-    };
-
     if (assetToken === undefined) {
         return (<></>);
     }
@@ -69,7 +64,7 @@ const App: React.FC<AppProps> = (props) => {
             >
                 <Row>
                     <Col sm={3}>
-                        <PlaceOrder setAssetToken={setSelectedAssetToken}/>
+                        <PlaceOrder setAssetToken={setAssetToken}/>
                     </Col>
                     <Col sm={3}>
                         <OrderBook/>
