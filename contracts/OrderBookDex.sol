@@ -238,6 +238,12 @@ contract OrderBookDex {
             return filledAmount;
         }
     
+    function deduceMarketPrice(bytes32 _ticker, ORDER_SIDE _side) internal view returns(uint) {
+        Order[] memory orders = orderBook[_ticker][_side == ORDER_SIDE.BUY ? ORDER_SIDE.SELL : ORDER_SIDE.BUY];
+        uint index = _side == ORDER_SIDE.BUY ? 0 : orders.length - 1;
+        return orders[index].price;
+    }
+
     function emitNewTradeEvent(Order storage _orderToMatch, Order storage _oppositeOrder, uint _matched)
         internal {
             Order memory buyOrder;
