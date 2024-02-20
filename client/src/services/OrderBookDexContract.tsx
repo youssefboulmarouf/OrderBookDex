@@ -1,6 +1,6 @@
 import { ethers, Contract, Signer } from 'ethers';
 import OrderBookDex from '../artifacts/contracts/OrderBookDex.sol/OrderBookDex.json';
-import { TokenProps, TokenDexBalance, ORDER_SIDE, Order } from '../components/common/common-props';
+import { TokenProps, TokenDexBalance, ORDER_SIDE, Order, ORDER_TYPE } from '../components/common/common-props';
 import Utils from '../utils';
 
 class OrderBookDexContract {
@@ -62,6 +62,7 @@ class OrderBookDexContract {
         }
     }
 
+    // TODO: Adjut the method to follow getOrders
     async getBalance(token: TokenProps, signer: Signer): Promise<TokenDexBalance | undefined> {
         try {
             return await this.contract.balances(
@@ -99,6 +100,28 @@ class OrderBookDexContract {
             Utils.handleError(e)
         }
         return orders;
+    }
+
+    async placedOrder(
+        token: TokenProps, 
+        amount: number, 
+        price: number, 
+        side: ORDER_SIDE, 
+        type: ORDER_TYPE
+    ): Promise<void> {
+        try {
+            const tx = await this.contract.placeOrder({
+                ticker: token.ticker,
+                amount: ethers.parseEther(amount.toString()),
+                price: price,
+                orderSide: side,
+                orderType: type
+            });
+            await tx.wait();
+        } catch (e) {
+            console.log(e)
+            Utils.handleError(e)
+        }
     }
 }
 
