@@ -5,12 +5,12 @@ import { TokenProps } from '../common/common-props';
 import { ethers } from 'ethers';
 import OrderBookDexContract from '../../services/OrderBookDexContract';
 
-interface AdQuoteTokenProps {
+interface AddQuoteTokenProps {
     tokens: TokenProps[];
     orderBookDexContract: OrderBookDexContract;
 }
 
-const AdQuoteToken: React.FC<AdQuoteTokenProps> = (props) => {
+const AddQuoteToken: React.FC<AddQuoteTokenProps> = (props) => {
     const [quoteTicker, setQuoteTicker] = useState<string>('');
     const [quoteTickerToDisable, setQuoteTickerToDisable] = useState<string>('');
 
@@ -63,4 +63,4 @@ const AdQuoteToken: React.FC<AdQuoteTokenProps> = (props) => {
     );
 }
 
-export default AdQuoteToken;
+export default AddQuoteToken;

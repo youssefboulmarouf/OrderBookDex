@@ -9,7 +9,7 @@ import Offcanvas from 'react-bootstrap/Offcanvas';
 import { TokenProps } from '../common/common-props';
 import OrderBookDexContract from '../../services/OrderBookDexContract';
 import AddNewToken from './AddNewToken';
-import AdQuoteToken from './AddQuoteToken';
+import AddQuoteToken from './AddQuoteToken';
 import TokensList from './TokensList';
 
 interface AdminSectionProps {
@@ -75,7 +75,7 @@ const AdminSection: React.FC<AdminSectionProps> = (props) => {
                         />
                     </Col>
                     <Col sm={6}>
-                        <AdQuoteToken 
+                        <AddQuoteToken 
                             tokens={tokens} 
                             orderBookDexContract={props.orderBookDexContract}
                         />
