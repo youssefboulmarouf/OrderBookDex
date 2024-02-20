@@ -13,8 +13,8 @@ const UserWallet: React.FC = () =>{
 
     const [walletAction, setWalletAction] = useState('Deposit');
     
-    const [assetDexBalance, setAssetDexBalance] = useState<TokenDexBalance>();
-    const [daiDexBalance, setDaiDexBalance] = useState<TokenDexBalance>();
+    const [assetDexBalance, setAssetDexBalance] = useState<TokenDexBalance>({free: BigInt(0), locked: BigInt(0)});
+    const [daiDexBalance, setDaiDexBalance] = useState<TokenDexBalance>({free: BigInt(0), locked: BigInt(0)});
         
     const [amount, setAmount] = useState('');
 
@@ -66,15 +66,15 @@ const UserWallet: React.FC = () =>{
             <div className='inner-box'>
                 <BalanceProgressBar 
                     token='DAI'
-                    free={daiDexBalance?.free}
-                    locked={daiDexBalance?.locked}
+                    free={daiDexBalance.free}
+                    locked={daiDexBalance.locked}
                 />
                 {(ethers.decodeBytes32String(selectedAsset.ticker) != 'DAI')
                     ? <>
                         <BalanceProgressBar 
                             token={ethers.decodeBytes32String(selectedAsset.ticker)}
-                            free={assetDexBalance?.free} 
-                            locked={assetDexBalance?.locked}
+                            free={assetDexBalance.free} 
+                            locked={assetDexBalance.locked}
                         />
                     </>
                     : ''

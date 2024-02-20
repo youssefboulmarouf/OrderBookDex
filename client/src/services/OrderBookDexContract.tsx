@@ -24,7 +24,7 @@ class OrderBookDexContract {
             const tx =  await this.contract.setQuoteTicker(token.ticker);
             await tx.wait();
         } catch (e) {
-            Utils.handleError(e)
+            Utils.handleError(e);
         }
     }
 
@@ -40,7 +40,7 @@ class OrderBookDexContract {
             );
             await tx.wait();
         } catch (e) {
-            Utils.handleError(e)
+            Utils.handleError(e);
         }
     }
 
@@ -49,7 +49,7 @@ class OrderBookDexContract {
             const tx =  await this.contract.disableTokenTrading(token.ticker);
             await tx.wait();
         } catch (e) {
-            Utils.handleError(e)
+            Utils.handleError(e);
         }
     }
 
@@ -58,20 +58,23 @@ class OrderBookDexContract {
             const tx =  await this.contract.enableTokenTrading(token.ticker);
             await tx.wait();
         } catch (e) {
-            Utils.handleError(e)
+            Utils.handleError(e);
         }
     }
 
     // TODO: Adjut the method to follow getOrders
-    async getBalance(token: TokenProps, signer: Signer): Promise<TokenDexBalance | undefined> {
+    async getBalance(token: TokenProps, signer: Signer): Promise<TokenDexBalance> {
+        let balance: TokenDexBalance = {free: BigInt(0), locked: BigInt(0)};
+        
         try {
-            return await this.contract.balances(
+            balance = await this.contract.balances(
                 await signer.getAddress(), 
                 token.ticker
             );
         } catch (e) {
-            Utils.handleError(e)
+            Utils.handleError(e);
         }
+        return balance;
     }
 
     async deposit(token: TokenProps, amount: BigInt): Promise<void> {
@@ -79,7 +82,7 @@ class OrderBookDexContract {
             const tx = await this.contract.deposit(token.ticker, amount);
             await tx.wait();
         } catch (e) {
-            Utils.handleError(e)
+            Utils.handleError(e);
         }
     }
 
@@ -88,7 +91,7 @@ class OrderBookDexContract {
             const tx = await this.contract.withdraw(token.ticker, amount);
             await tx.wait();
         } catch (e) {
-            Utils.handleError(e)
+            Utils.handleError(e);
         }
     }
 
@@ -97,7 +100,7 @@ class OrderBookDexContract {
         try {
             orders = await this.contract.getOrders(token.ticker, side);
         } catch (e) {
-            Utils.handleError(e)
+            Utils.handleError(e);
         }
         return orders;
     }
@@ -119,8 +122,7 @@ class OrderBookDexContract {
             });
             await tx.wait();
         } catch (e) {
-            console.log(e)
-            Utils.handleError(e)
+            Utils.handleError(e);
         }
     }
 }
