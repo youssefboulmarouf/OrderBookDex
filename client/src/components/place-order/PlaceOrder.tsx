@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MarketDropDown from './MarketDropDown';
-import { TokenProps } from '../common/common-props';
+import { ORDER_SIDE, ORDER_TYPE, TokenProps } from '../common/common-props';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Form from 'react-bootstrap/Form';
@@ -13,7 +13,7 @@ interface PlaceOrderProps {
 }
 
 const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
-    const { tokens, selectedAsset, triggerBalanceRefresh } = useAppContext();
+    const { tokens, selectedAsset, orderBookDexContract, triggerRefresh } = useAppContext();
 
     const [buySellButton, setBuySellButton] = useState('buy');
     const [limitMarketButton, setLimitMarketButton] = useState('limit');
@@ -41,8 +41,14 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
 
     const createOrder = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        console.log('createOrder')
-        triggerBalanceRefresh();
+        await orderBookDexContract.placedOrder(
+            selectedAsset, 
+            amount, 
+            price, 
+            buySellButton === 'buy' ? ORDER_SIDE.BUY : ORDER_SIDE.SELL,
+            limitMarketButton === 'limit' ? ORDER_TYPE.LIMIT : ORDER_TYPE.MARKET
+        )
+        triggerRefresh();
     }
 
     useEffect(() => {
