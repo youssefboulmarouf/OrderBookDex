@@ -15,7 +15,12 @@ class OrderBookDexContract {
     }
 
     async getQuoteTicker(): Promise<string> {
-        const quoteTicker = await this.contract.quoteTicker();
+        let quoteTicker = '';
+        try {
+            quoteTicker = await this.contract.quoteTicker();
+        } catch (e) {
+            Utils.handleError(e);
+        }
         return quoteTicker;
     }
 
@@ -29,7 +34,13 @@ class OrderBookDexContract {
     }
 
     async getAllTokens(): Promise<TokenProps[]> {
-        return await this.contract.getTokens();
+        let tokens: TokenProps[] = [];
+        try {
+            tokens = await this.contract.getTokens();
+        } catch (e) {
+            Utils.handleError(e);
+        }
+        return tokens
     }
 
     async addToken(token: TokenProps): Promise<void> {
