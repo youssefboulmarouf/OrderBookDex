@@ -92,14 +92,6 @@
     font-size: 1.25rem; /* Larger font size */
 }
 
-.sell-row {
-    background-color: rgba(231, 102, 102, 0.425) !important;
-}
-
-.buy-row {
-    background-color: rgba(113, 231, 102, 0.425) !important;
-}
-
 .custom-input-group .form-control::-webkit-inner-spin-button,
 .custom-input-group .form-control::-webkit-outer-spin-button {
     -webkit-appearance: none;
