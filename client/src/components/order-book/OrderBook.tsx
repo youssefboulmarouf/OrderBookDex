@@ -14,14 +14,12 @@ interface AggregatedOrder {
 }
 
 const OrderBook: React.FC = () => {
-    const { selectedAsset, orderBookDexContract, refreshTrigger } = useAppContext();
+    const { buyOrders, sellOrders } = useAppContext();
 
     const [aggregatedBuyOrders, setAggregatedBuyOrders] = useState<AggregatedOrder[]>([]);
     const [aggregatedSellOrders, setAggregatedSellOrders] = useState<AggregatedOrder[]>([]);
 
     const loadOrders = async () => {
-        const buyOrders = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.BUY);
-        const sellOrders = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.SELL);
         setAggregatedBuyOrders(aggregateOrdersByPrice(buyOrders))
         setAggregatedSellOrders(aggregateOrdersByPrice(sellOrders))
     }
@@ -55,9 +53,7 @@ const OrderBook: React.FC = () => {
 
     useEffect(() => {
         loadOrders();
-    }, [selectedAsset]);
-
-    useEffect(() => {console.log('OrderBook triggerBalanceRefresh')}, [refreshTrigger]);
+    }, [buyOrders, sellOrders]);
 
     return (
         <div className="default-box-layout order-book">
@@ -65,35 +61,31 @@ const OrderBook: React.FC = () => {
             <div className='inner-box'>
                 <Tabs defaultActiveKey="orderBook" fill>
                     <Tab eventKey="orderBook" title="Order Book">
-                        <div>
-                            <Table>
-                                <thead>
-                                    <tr>
-                                        <th>Price</th>
-                                        <th>AMount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {aggregatedSellOrders.map(order => (
-                                    <tr key={order.price}>
-                                        <td>{order.price.toString()}</td>
-                                        <td>{ethers.formatEther(order.totalAmount.toString())}</td>
-                                    </tr>
-                                ))}
+                        <Table>
+                            <thead>
+                                <tr>
+                                    <th>Price</th>
+                                    <th>AMount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {aggregatedSellOrders.map(order => (
+                                <tr key={order.price} className='sell-rows'>
+                                    <td>{order.price.toString()}</td>
+                                    <td>{ethers.formatEther(order.totalAmount.toString())}</td>
+                                </tr>
+                            ))}
 
-                                <tr><td></td><td></td></tr>
+                            <tr><td></td><td></td></tr>
 
-                                {aggregatedBuyOrders.map(order => (
-                                    <tr key={order.price} >
-                                        <td>{order.price.toString()}</td>
-                                        <td>{ethers.formatEther(order.totalAmount.toString())}</td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                                <tbody>
-                                </tbody>
-                            </Table>
-                        </div>
+                            {aggregatedBuyOrders.map(order => (
+                                <tr key={order.price} className='buy-rows'>
+                                    <td>{order.price.toString()}</td>
+                                    <td>{ethers.formatEther(order.totalAmount.toString())}</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
                     </Tab>
                     <Tab eventKey="allTrades" title="All Trades">
                         Tab content for Profile

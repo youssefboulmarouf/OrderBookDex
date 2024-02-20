@@ -5,13 +5,13 @@ import Button from 'react-bootstrap/Button';
 import { XSquareFill } from 'react-bootstrap-icons';
 
 import './trades.css';
-import { Order, ORDER_SIDE } from '../common/common-props';
+import { Order } from '../common/common-props';
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import { useAppContext } from '../../AppContext';
 
 const Trades: React.FC = () => {
-    const { selectedAsset, account, orderBookDexContract, refreshTrigger } = useAppContext();
+    const { account, buyOrders, sellOrders } = useAppContext();
     const [currentTokensOrders, setCurrentTokensOrders] = useState<Order[]>([]);
 
     const cancelTrade = (e: React.FormEvent, order: Order) => {
@@ -24,7 +24,6 @@ const Trades: React.FC = () => {
     
         return `${date.getDate()}/${(date.getMonth() + 1)}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
     }
-    
 
     const ectractMyOrder = (orders: Order[], address: string): Order[] => {
         const myOrders: Order[] = []
@@ -37,17 +36,13 @@ const Trades: React.FC = () => {
     }
 
     const loadOrders = async () => {
-        const buyOrders = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.BUY);
-        const sellOrders = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.SELL);
         const address = await account.getAddress();
         setCurrentTokensOrders(ectractMyOrder(buyOrders, address).concat(ectractMyOrder(sellOrders, address)))
     }
 
     useEffect(() => {
         loadOrders();
-    }, [selectedAsset]);
-
-    useEffect(() => {console.log('Trades triggerBalanceRefresh')}, [refreshTrigger]);
+    }, [buyOrders, sellOrders]);
 
     return (
         <div className="default-box-layout trades">

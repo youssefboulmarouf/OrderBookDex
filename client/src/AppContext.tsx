@@ -1,15 +1,16 @@
 import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
 import OrderBookDexContract from './services/OrderBookDexContract';
 import { Signer } from 'ethers';
-import { TokenProps } from './components/common/common-props';
+import { ORDER_SIDE, Order, TokenProps } from './components/common/common-props';
 
 interface AppContextType {
     tokens: TokenProps[];
     selectedAsset: TokenProps;
     account: Signer;
     orderBookDexContract: OrderBookDexContract;
-    refreshTrigger: number;
-    triggerBalanceRefresh: () => void;
+    buyOrders: Order[],
+    sellOrders: Order[],
+    triggerRefresh: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -33,14 +34,34 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = (
     { children, tokens, selectedAsset, account, orderBookDexContract }
 ) => {
-    const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+    const [buyOrders, setBuyOrders] = useState<Order[]>([]);
+    const [sellOrders, setSellOrders] = useState<Order[]>([]);
 
-    const triggerBalanceRefresh = useCallback(() => {
-        setRefreshTrigger(oldTrigger => oldTrigger + 1);
+    const triggerRefresh = useCallback(() => {
+        loadOrders();
     }, []);
 
+    const loadOrders = async () => {
+        const buys = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.BUY)
+        setBuyOrders(buys);
+        const sells = await orderBookDexContract.getOrders(selectedAsset, ORDER_SIDE.SELL)
+        setSellOrders(sells);
+    };
+
+    useEffect(() => {
+        loadOrders();
+    }, [selectedAsset]);
+
     return (
-        <AppContext.Provider value={{ tokens, selectedAsset, account, orderBookDexContract, refreshTrigger, triggerBalanceRefresh }}>
+        <AppContext.Provider value={{ 
+            tokens, 
+            selectedAsset, 
+            account, 
+            orderBookDexContract, 
+            buyOrders, 
+            sellOrders, 
+            triggerRefresh 
+        }}>
             {children}
         </AppContext.Provider>
     );

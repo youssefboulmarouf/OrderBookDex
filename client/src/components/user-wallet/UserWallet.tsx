@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { ethers } from 'ethers';
-import TokenContract from '../../services/TokenContract';
 import { TokenProps, TokenDexBalance } from '../common/common-props';
 import BalanceProgressBar from './BalanceProgressBar';
 import WalletAction from './WalletAction';
@@ -10,7 +9,7 @@ import './user-wallet.css';
 import { useAppContext } from '../../AppContext';
 
 const UserWallet: React.FC = () =>{
-    const { tokens, selectedAsset, account, orderBookDexContract, refreshTrigger } = useAppContext();
+    const { tokens, selectedAsset, account, orderBookDexContract, buyOrders, sellOrders } = useAppContext();
 
     const [walletAction, setWalletAction] = useState('Deposit');
     
@@ -59,9 +58,7 @@ const UserWallet: React.FC = () =>{
             refreshDexBalance(selectedAsset);
         }
         getAssetDexBalance();
-    }, [selectedAsset]);
-
-    useEffect(() => {console.log('UserWallet triggerBalanceRefresh')}, [refreshTrigger]);
+    }, [buyOrders, sellOrders]);
 
     return (
         <div className='default-box-layout user-wallet'>
