@@ -24,7 +24,6 @@ const AdminSection: React.FC<AdminSectionProps> = (props) => {
     
     const loadTokens = async () => {
         const allTokens = (props.orderBookDexContract) ? await props.orderBookDexContract.getAllTokens() : [];
-        console.log('allTokens: ', allTokens);
         setTokens(allTokens);
     };
 
