@@ -15,7 +15,7 @@ import TokensList from './TokensList';
 interface AdminSectionProps {
     showAdminSection: boolean; 
     handleClose: () => void;
-    orderBookDexContract: OrderBookDexContract;
+    orderBookDexContract: OrderBookDexContract | undefined;
 }
 
 const AdminSection: React.FC<AdminSectionProps> = (props) => {
@@ -23,7 +23,9 @@ const AdminSection: React.FC<AdminSectionProps> = (props) => {
     const [tokens, setTokens] = useState<TokenProps[]>([]);
     
     const loadTokens = async () => {
-        setTokens(await props.orderBookDexContract.getAllTokens());
+        const allTokens = (props.orderBookDexContract) ? await props.orderBookDexContract.getAllTokens() : [];
+        console.log('allTokens: ', allTokens);
+        setTokens(allTokens);
     };
 
     const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,20 +38,20 @@ const AdminSection: React.FC<AdminSectionProps> = (props) => {
     
     const addToken = async (e: React.FormEvent) => {
         e.preventDefault();
-        await props.orderBookDexContract.addToken(token);
+        await props.orderBookDexContract?.addToken(token);
         await loadTokens();
         setToken({ ticker: '', tokenAddress: '', isTradable: true });
     }
 
     const enableToken = async (e: React.FormEvent, token: TokenProps) => {
         e.preventDefault();
-        await props.orderBookDexContract.enableToken(token);
+        await props.orderBookDexContract?.enableToken(token);
         await loadTokens();
     }
 
     const disableToken = async (e: React.FormEvent, token: TokenProps) => {
         e.preventDefault();
-        await props.orderBookDexContract.disableToken(token);
+        await props.orderBookDexContract?.disableToken(token);
         await loadTokens();
     }
 
@@ -58,7 +60,7 @@ const AdminSection: React.FC<AdminSectionProps> = (props) => {
             await loadTokens();
         };
         loadData();
-    }, []);
+    }, [props.orderBookDexContract]);
 
     return (
         <Offcanvas show={props.showAdminSection} onHide={props.handleClose} placement='bottom'>
@@ -66,29 +68,31 @@ const AdminSection: React.FC<AdminSectionProps> = (props) => {
                 <Offcanvas.Title>Admin Section</Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
-                <Row>
-                    <Col sm={6}>
-                        <AddNewToken 
-                            token={token} 
-                            addToken={addToken} 
-                            handleTokenChange={handleTokenChange}
+                <div className='inner-box'>
+                    <Row>
+                        <Col sm={6}>
+                            <AddNewToken 
+                                token={token} 
+                                addToken={addToken} 
+                                handleTokenChange={handleTokenChange}
+                            />
+                        </Col>
+                        <Col sm={6}>
+                            <AddQuoteToken 
+                                tokens={tokens} 
+                                orderBookDexContract={props.orderBookDexContract}
+                            />
+                        </Col>
+                    </Row>
+                    <br/>
+                    <Row>
+                        <TokensList 
+                            tokens={tokens}
+                            enableToken={enableToken}
+                            disableToken={disableToken}
                         />
-                    </Col>
-                    <Col sm={6}>
-                        <AddQuoteToken 
-                            tokens={tokens} 
-                            orderBookDexContract={props.orderBookDexContract}
-                        />
-                    </Col>
-                </Row>
-                <br/>
-                <Row>
-                    <TokensList 
-                        tokens={tokens}
-                        enableToken={enableToken}
-                        disableToken={disableToken}
-                    />
-                </Row>
+                    </Row>
+                </div>
             </Offcanvas.Body>
         </Offcanvas>
     );

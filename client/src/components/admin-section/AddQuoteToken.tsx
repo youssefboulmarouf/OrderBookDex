@@ -7,7 +7,7 @@ import OrderBookDexContract from '../../services/OrderBookDexContract';
 
 interface AddQuoteTokenProps {
     tokens: TokenProps[];
-    orderBookDexContract: OrderBookDexContract;
+    orderBookDexContract: OrderBookDexContract | undefined;
 }
 
 const AddQuoteToken: React.FC<AddQuoteTokenProps> = (props) => {
@@ -17,13 +17,13 @@ const AddQuoteToken: React.FC<AddQuoteTokenProps> = (props) => {
     const setQuoteToken = async () => {
         const quoteToken = props.tokens.find(tok => ethers.decodeBytes32String(tok.ticker) === quoteTicker)
         if (quoteToken != undefined) {
-            await props.orderBookDexContract.setQuoteTicker(quoteToken)
+            await props.orderBookDexContract?.setQuoteTicker(quoteToken)
             await loadQuoteTicker();
         }
     }
 
     const loadQuoteTicker = async () => {
-        const ticker: string = ethers.decodeBytes32String(await props.orderBookDexContract.getQuoteTicker());
+        const ticker: string = ethers.decodeBytes32String((props.orderBookDexContract) ? await props.orderBookDexContract.getQuoteTicker() : '');
         setQuoteTicker(ticker);
 
         if (ticker) {

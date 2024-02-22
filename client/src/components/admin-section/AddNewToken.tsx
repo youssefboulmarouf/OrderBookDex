@@ -37,7 +37,7 @@ const AddNewToken: React.FC<AddNewTokenProps> = (props) => {
                 />
             </FormGroup>
             <br />
-            <Button type="submit">Add Token</Button>
+            <Button type="submit">Add New Token</Button>
         </Form>
         </>
     );
