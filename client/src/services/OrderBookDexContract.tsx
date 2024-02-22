@@ -10,8 +10,12 @@ class OrderBookDexContract {
         this.contract = new ethers.Contract(contractAddress, OrderBookDex.abi, signer);
     }
 
-    getContractAddress(): Promise<string> {
-        return this.contract.getAddress();
+    async getContractAddress(): Promise<string> {
+        return await this.contract.getAddress();
+    }
+
+    async isAdmin(): Promise<boolean> {
+        return await this.contract.isAdmin();
     }
 
     async getQuoteTicker(): Promise<string> {
