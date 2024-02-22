@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import '../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '../node_modules/hardhat/console.sol';
+import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+import 'hardhat/console.sol';
 
 contract OrderBookDex {
 
@@ -65,6 +65,10 @@ contract OrderBookDex {
     constructor() { 
         admin = msg.sender; 
         quoteTicker = bytes32(0);
+    }
+
+    function isAdmin() external view returns (bool) {
+        return admin == msg.sender;
     }
 
     function setQuoteTicker(bytes32 _ticker) 
