@@ -1,9 +1,0 @@
-.trades {
-    height: 30vh;
-}
-
-.trades .table-container {
-    height: 23vh;
-    max-height: 100%;
-    overflow-y: auto;
-}
