@@ -3,6 +3,20 @@
 }
   
 .navbar {
-  margin: 10px; 
+  background-color: #072a3b;
+  margin: 5px; 
+  padding: 10px !important;
   border-radius: 10px;
+}
+
+.centered-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+
+.admin-button {
+  margin-left: 5px;
 }
