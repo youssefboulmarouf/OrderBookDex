@@ -1,20 +1,18 @@
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-import { Table } from 'react-bootstrap';
-import { Order, ORDER_SIDE } from '../common/common-props';
-import { ethers } from 'ethers';
-import { useEffect, useState } from 'react';
-import { useAppContext } from '../../AppContext';
+import { Col, Row } from 'react-bootstrap';
 import './order-book.css';
+import { Order } from '../common/common-props';
+import { useAppContext } from '../../AppContext';
+import { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
 
 interface AggregatedOrder {
-    price: number;
-    totalAmount: BigInt;
+    price: bigint;
+    totalAmount: bigint;
     orders: Order[];
 }
 
 const OrderBook: React.FC = () => {
-    const { buyOrders, sellOrders } = useAppContext();
+    const { buyOrders, sellOrders, buySellButton, marketPrice, setMarketPrice } = useAppContext();
 
     const [aggregatedBuyOrders, setAggregatedBuyOrders] = useState<AggregatedOrder[]>([]);
     const [aggregatedSellOrders, setAggregatedSellOrders] = useState<AggregatedOrder[]>([]);
@@ -24,10 +22,16 @@ const OrderBook: React.FC = () => {
         setAggregatedSellOrders(aggregateOrdersByPrice(sellOrders))
     }
 
+    const refreshMarketPrice = () => {
+        if (buySellButton == 'buy') {
+            setMarketPrice(aggregatedSellOrders.at(0)?.price || BigInt(0));
+        } else {
+            setMarketPrice(aggregatedBuyOrders.at(0)?.price || BigInt(0));
+        }
+    }
+
     function aggregateOrdersByPrice(orders: Order[]): AggregatedOrder[] {
-        orders = [...orders].reverse();
-    
-        const aggregationMap = new Map<number, AggregatedOrder>();
+        const aggregationMap = new Map<bigint, AggregatedOrder>();
     
         orders.forEach(order => {
             const filledAmount = order.fills.reduce((acc, fill) => BigInt(acc.toString()) + BigInt(fill), BigInt(0));
@@ -53,44 +57,48 @@ const OrderBook: React.FC = () => {
 
     useEffect(() => {
         loadOrders();
+        refreshMarketPrice();
     }, [buyOrders, sellOrders]);
 
+    useEffect(() => {
+        refreshMarketPrice();
+    }, [buySellButton]);
+
     return (
-        <div className="default-box-layout order-book">
-            <div className='title-box'>ORDER BOOK</div>
-            <div className='inner-box'>
-                <Tabs defaultActiveKey="orderBook" fill>
-                    <Tab eventKey="orderBook" title="Order Book">
-                        <Table>
-                            <thead>
-                                <tr>
-                                    <th>Price</th>
-                                    <th>AMount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {aggregatedSellOrders.map(order => (
-                                <tr key={order.price} className='sell-rows'>
-                                    <td>{order.price.toString()}</td>
-                                    <td>{ethers.formatEther(order.totalAmount.toString())}</td>
-                                </tr>
-                            ))}
+        <div className='custom-box'>
+            <div className='order-book'>
+                <div className='order-book-header'>
+                    <div className='row body-10 header-text'>
+                        <div className='col-4'>Price</div>
+                        <div className='col-4 center-text-align'>Amount</div>
+                        <div className='col-4 right-text-align'>Total</div>
+                    </div>
+                </div>
+                <div className='sellers-container body-40 end'>
+                    {aggregatedSellOrders.map(order => (
+                        <Row key={order.price}>
+                            <Col><div className='sell-row'>{ethers.formatEther(order.price.toString())}</div></Col>
+                            <Col><div className='center-text-align'>{ethers.formatEther(order.totalAmount.toString())}</div></Col>
+                            <Col><div className='right-text-align'>{ethers.formatEther((order.totalAmount * order.price) / BigInt(1e18))}</div></Col>
+                        </Row>
+                    ))}
+                </div>
+                
+                <div className='row body-10'>
+                    <div className={(buySellButton == 'buy') ? 'market-price-box buy-row': 'market-price-box sell-row'}>
+                        {ethers.formatEther(marketPrice.toString())}
+                    </div>
+                </div>
 
-                            <tr><td></td><td></td></tr>
-
-                            {aggregatedBuyOrders.map(order => (
-                                <tr key={order.price} className='buy-rows'>
-                                    <td>{order.price.toString()}</td>
-                                    <td>{ethers.formatEther(order.totalAmount.toString())}</td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </Table>
-                    </Tab>
-                    <Tab eventKey="allTrades" title="All Trades">
-                        Tab content for Profile
-                    </Tab>
-                </Tabs>
+                <div className='buyers-container body-40'>
+                    {aggregatedBuyOrders.map(order => (
+                        <Row key={order.price}>
+                            <Col><div className='buy-row'>{ethers.formatEther(order.price.toString())}</div></Col>
+                            <Col><div className='center-text-align'>{ethers.formatEther(order.totalAmount.toString())}</div></Col>
+                            <Col><div className='right-text-align'>{ethers.formatEther((order.totalAmount * order.price) / BigInt(1e18))}</div></Col>
+                        </Row>
+                    ))}
+                </div>
             </div>
         </div>
     );

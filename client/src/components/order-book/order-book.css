@@ -1,4 +1,33 @@
-.order-book { 
-    height: 60vh;
+.order-book {
+  padding: 5px;
+  height: 37vh;
 }
 
+.body-40 {
+  height: 40%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 5px;
+  overflow-y: auto;
+}
+
+.body-10 {
+  height: 10%;
+}
+
+.market-price-box {
+  display: flex;
+  align-items: center;
+  font-size: larger;
+  font-weight: bolder;
+  height: 100%;
+}
+
+.sellers-container {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.buyers-container , .sellers-container {
+  flex: 0 0 auto;
+}
