@@ -6,8 +6,8 @@ interface TokenProps {
 }
 
 interface TokenDexBalance {
-    free: BigInt;
-    locked: BigInt;
+    free: bigint;
+    locked: bigint;
 }
 
 enum ORDER_SIDE { BUY, SELL }
@@ -20,11 +20,25 @@ interface Order {
     orderSide: ORDER_SIDE;
     orderType: ORDER_TYPE;
     ticker: string;
-    amount: BigInt;
-    fills: number[];
-    price: number;
-    date: string;
+    amount: bigint;
+    fills: bigint[];
+    price: bigint;
+    date: bigint;
 }
 
-export type { TokenProps, TokenDexBalance, Order };
+interface NewTradeEvent {
+    tradeId: number;
+    makerOrderId: number;
+    takerOrderId: number;
+    ticker: string;
+    makerTrader: string;
+    takerTrader: string;
+    takerOderType: ORDER_TYPE;
+    takerTradeSide: ORDER_SIDE,
+    amount: bigint;
+    price: bigint;
+    date: bigint;
+}
+
+export type { TokenProps, TokenDexBalance, Order, NewTradeEvent };
 export { ORDER_SIDE, ORDER_TYPE }
