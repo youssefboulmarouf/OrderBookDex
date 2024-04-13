@@ -1,5 +1,5 @@
 import Button from 'react-bootstrap/Button';
-import './excerpt.css';
+import { WalletFill } from 'react-bootstrap-icons';
 
 interface ExcerptProps {
     connectWallet: () => void;
@@ -14,9 +14,9 @@ const Excerpt: React.FC<ExcerptProps> = (props) => {
                     <h1>OrderBookDex</h1>
                 </div>
                 <div className='excerpt-body'>
-                    <p>A mono-quote token Order Book trading platform concieved for learning and testing only.</p>
+                    <p>Single Quote Token Order Book Trading Platform.</p>
                 </div>
-                <Button variant='warning' onClick={props.connectWallet}>Connect Wallet</Button>
+                <Button variant='info' onClick={props.connectWallet}><WalletFill size={25}/><i> Connect Wallet</i></Button>
             </div>
         </div>
         </>
