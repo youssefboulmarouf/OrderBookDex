@@ -1,6 +1,6 @@
 import { ethers, Contract, Signer } from 'ethers';
 import OrderBookDex from '../artifacts/contracts/OrderBookDex.sol/OrderBookDex.json';
-import { TokenProps, TokenDexBalance, ORDER_SIDE, Order, ORDER_TYPE } from '../components/common/common-props';
+import { TokenProps, TokenDexBalance, ORDER_SIDE, Order, ORDER_TYPE, NewTradeEvent } from '../components/common/common-props';
 import Utils from '../utils';
 
 class OrderBookDexContract {
@@ -8,6 +8,10 @@ class OrderBookDexContract {
 
     constructor(signer: ethers.Signer, contractAddress: string) {
         this.contract = new ethers.Contract(contractAddress, OrderBookDex.abi, signer);
+    }
+
+    getContract(): Contract {
+        return this.contract;
     }
 
     async getContractAddress(): Promise<string> {
@@ -130,7 +134,7 @@ class OrderBookDexContract {
             const tx = await this.contract.placeOrder({
                 ticker: token.ticker,
                 amount: ethers.parseEther(amount.toString()),
-                price: price,
+                price: ethers.parseEther(price.toString()),
                 orderSide: side,
                 orderType: type
             });
@@ -138,6 +142,42 @@ class OrderBookDexContract {
         } catch (e) {
             Utils.handleError(e);
         }
+    }
+
+    async cancelOrder(order: Order) {
+        try {
+            const tx = await this.contract.cancelOrder(order.ticker, order.id, order.orderSide);
+            await tx.wait();
+        } catch (e) {
+            Utils.handleError(e);
+        }
+    }
+
+    async getNewTradeEvents(): Promise<NewTradeEvent[]> {
+        const newTrades: NewTradeEvent[] = [];
+        try {
+            const events = await this.contract.queryFilter('NewTrade');
+            
+            events.forEach(ev => {
+                const eventData = ev as ethers.EventLog;
+                newTrades.push({
+                    tradeId: eventData.args[0],
+                    makerOrderId: eventData.args[1],
+                    takerOrderId: eventData.args[2],
+                    ticker: eventData.args[3],
+                    makerTrader: eventData.args[4],
+                    takerTrader: eventData.args[5],
+                    takerOderType: eventData.args[6],
+                    takerTradeSide: eventData.args[7],
+                    amount: eventData.args[8],
+                    price: eventData.args[9],
+                    date: eventData.args[10],
+                });
+            });
+        } catch (e) {
+            Utils.handleError(e);
+        }
+        return newTrades;
     }
 }
 
