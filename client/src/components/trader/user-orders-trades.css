@@ -1,0 +1,20 @@
+.user-orders-trades {
+  padding: 5px;
+  height: 32vh;
+  margin-bottom: 5px;
+  display: flex; /* Add flex display */
+  flex-direction: column; /* Stack children vertically */
+}
+
+.tab-content-body {
+  overflow-y: auto;
+  max-height: calc(33vh - 95px);
+
+}
+ 
+.cancel-order-button {
+  margin: 0px;
+  margin-bottom: 5px;
+  padding: 0px !important;
+  border: 0px !important;
+}
