@@ -18,12 +18,12 @@ const WalletAction: React.FC<WalletActionProps> = (props) => {
         <>
         <ButtonGroup className='button-group'>
             <Button className='button'
-                variant={props.walletAction === 'Deposit' ? 'primary' : ''} 
+                variant={props.walletAction === 'Deposit' ? 'info' : 'accent3'}
                 onClick={() => handletWalletAction('Deposit')}
             >Deposit</Button>
             
             <Button className='button'
-                variant={props.walletAction === 'Withdraw' ? 'warning' : ''} 
+                variant={props.walletAction === 'Withdraw' ? 'info' : 'accent3'}
                 onClick={() => handletWalletAction('Withdraw')}
             >Withdraw</Button>
         </ButtonGroup>
