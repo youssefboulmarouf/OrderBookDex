@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 
 interface BalanceProgressBarProps {
@@ -28,17 +29,17 @@ const BalanceProgressBar: React.FC<BalanceProgressBarProps> = (props) => {
     }, [free, lock]);
 
     return (
-        <div>
-            <div className='balance-title-box'>{props.token} Balance</div>
-            <div className='progress-container'>
-                <span className='progress-label'>Available: {free + ' ' + props.token}</span>
-                <span className='progress-label'>Locked: {lock + ' ' + props.token}</span>
-            </div>
-            <ProgressBar className='progress'>
-                <ProgressBar variant='success' now={freePercentage}/>
-                <ProgressBar variant='danger' now={lockPercentage}/>
-            </ProgressBar>
-        </div>
+        <>
+        <Row className='header-text'>
+            <Col><span>Available: {free}</span></Col>
+            <Col className='right-text-align'><span>Locked: {lock}</span></Col>
+            
+        </Row>
+        <ProgressBar className='progress'>
+            <ProgressBar variant='success' now={freePercentage}/>
+            <ProgressBar variant='danger' now={lockPercentage}/>
+        </ProgressBar>
+        </>
     );
 }
 
