@@ -1,15 +1,17 @@
-.admin-dropdown .dropdown-toggle {
+.admin-dropdown .admin-dropdown-toggle {
     width: 100%;
     margin-top: 5px;
     display: flex;
     justify-content: space-between;
+    background-color: white !important;
+    color: black !important;
 }
 
-.admin-dropdown .dropdown-menu {
+.admin-dropdown .admin-dropdown-menu {
     width: 100%;
 }
 
-.admin-dropdown .dropdown-toggle::after {
+.admin-dropdown .admin-dropdown-toggle::after {
     margin-top: 10px;
 }
 
@@ -21,5 +23,23 @@
 
 .offcanvas {
     height: 60vh !important;
-    background-color: #dddfe0 !important;
+    background-color: #64708c !important;
+    color: white !important;
+}
+
+.modal-content {
+    background-color: #64708c !important;
+    color: white !important;
+}
+
+.add-new-token {
+    padding: 5px;
+}
+
+.add-quote-token {
+    padding: 5px;
+}
+
+.table th, .table td {
+    color: white !important;
 }
