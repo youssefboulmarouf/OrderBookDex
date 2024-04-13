@@ -7,15 +7,17 @@ import BalanceProgressBar from './BalanceProgressBar';
 import WalletAction from './WalletAction';
 import './user-wallet.css';
 import { useAppContext } from '../../AppContext';
+import { Tab, Tabs } from 'react-bootstrap';
 
 const UserWallet: React.FC = () =>{
-    const { tokens, selectedAsset, account, orderBookDexContract, buyOrders, sellOrders } = useAppContext();
+    const { selectedAsset, quoteToken, account, orderBookDexContract, buyOrders, sellOrders } = useAppContext();
 
     const [walletAction, setWalletAction] = useState('Deposit');
     
     const [assetDexBalance, setAssetDexBalance] = useState<TokenDexBalance>({free: BigInt(0), locked: BigInt(0)});
     const [daiDexBalance, setDaiDexBalance] = useState<TokenDexBalance>({free: BigInt(0), locked: BigInt(0)});
         
+    const [tokenToTransfer, setTokenToTransfer] = useState<TokenProps>(quoteToken);
     const [amount, setAmount] = useState('');
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,13 +32,13 @@ const UserWallet: React.FC = () =>{
 
         if (walletAction == 'Deposit') {
             await orderBookDexContract.deposit(
-                selectedAsset,
-                ethers.parseEther(amount)
+                tokenToTransfer,
+                ethers.parseUnits(amount, 'ether')
             );
         } else {
             await orderBookDexContract.withdraw(
-                selectedAsset,
-                ethers.parseEther(amount)
+                tokenToTransfer,
+                ethers.parseUnits(amount, 'ether')
             );
         }
         refreshDexBalance(selectedAsset);
@@ -46,10 +48,7 @@ const UserWallet: React.FC = () =>{
         const balance = await orderBookDexContract.getBalance(token, account)
         setAssetDexBalance(balance);
 
-        const dai: TokenProps[] = tokens.filter(token => 
-            ethers.decodeBytes32String(token.ticker) == 'DAI'
-        );
-        const daiBalance = await orderBookDexContract.getBalance(dai[0], account)
+        const daiBalance = await orderBookDexContract.getBalance(quoteToken, account)
         setDaiDexBalance(daiBalance);
     }
 
@@ -61,26 +60,25 @@ const UserWallet: React.FC = () =>{
     }, [buyOrders, sellOrders]);
 
     return (
-        <div className='default-box-layout user-wallet'>
-            <div className='title-box'>OBDex Wallet</div>
-            <div className='inner-box'>
-                <BalanceProgressBar 
-                    token='DAI'
-                    free={daiDexBalance.free}
-                    locked={daiDexBalance.locked}
-                />
-                {(ethers.decodeBytes32String(selectedAsset.ticker) != 'DAI')
-                    ? <>
+        <div className='custom-box'>
+            <div className='user-wallet'>
+
+                <Tabs fill defaultActiveKey="quote" className="mb-3" onSelect={(eventKey) => (eventKey === "quote") ? setTokenToTransfer(quoteToken) : setTokenToTransfer(selectedAsset)}>
+                    <Tab eventKey="quote" title={ethers.decodeBytes32String(quoteToken.ticker)}>
+                        <BalanceProgressBar 
+                            token='DAI'
+                            free={daiDexBalance.free}
+                            locked={daiDexBalance.locked}
+                        />
+                    </Tab>
+                    <Tab eventKey="asset" title={ethers.decodeBytes32String(selectedAsset.ticker)}>
                         <BalanceProgressBar 
                             token={ethers.decodeBytes32String(selectedAsset.ticker)}
-                            free={assetDexBalance.free} 
+                            free={assetDexBalance.free}
                             locked={assetDexBalance.locked}
                         />
-                    </>
-                    : ''
-                }
-
-                <div className='balance-title-box'>Transfer {ethers.decodeBytes32String(selectedAsset.ticker)}</div>
+                    </Tab>
+                </Tabs>
 
                 <WalletAction 
                     selectedToken={selectedAsset}
@@ -103,7 +101,7 @@ const UserWallet: React.FC = () =>{
                     <Button 
                         className='place-order-button button' 
                         type='submit'
-                        variant={(walletAction === 'Deposit') ? 'primary' : 'warning'}
+                        variant='info'
                     >
                         Transfer Tokens
                     </Button>
