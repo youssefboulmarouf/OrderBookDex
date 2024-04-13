@@ -1,5 +1,9 @@
 import { ethers } from "hardhat";
 import { OrderBookDex, TestToken } from "../typechain-types";
+import { expect } from "chai";
+
+const ORDER_SIDE = {BUY: 0, SELL: 1};
+const ORDER_TYPE = {MARKET: 0, LIMIT: 1};
 
 async function deployOrderBookContract() {
     const contractFactory = await ethers.getContractFactory("OrderBookDex");
@@ -56,10 +60,68 @@ async function seedTradersWallets(orderBookDex:OrderBookDex, tokenContract: Test
     );
 }
 
+async function placeOrder(
+    orderBookDex: OrderBookDex, 
+    traderIndex: number, 
+    symbol: string, 
+    amount: string, 
+    price: string, 
+    orderSide: number, 
+    orderType: number
+) {
+    const traders = await ethers.getSigners();
+    await orderBookDex
+        .connect(traders.at(traderIndex))
+        .placeOrder({
+            ticker: ethers.encodeBytes32String(symbol),
+            amount: ethers.parseUnits(amount, 'ether'),
+            price: ethers.parseUnits(price, 'ether'),
+            orderSide: orderSide,
+            orderType: orderType
+        });
+}
+
+async function setQuoteTicker(orderBookDex: OrderBookDex, symbol: string) {
+    const [owner] = await ethers.getSigners();
+    await orderBookDex.connect(owner).setQuoteTicker(ethers.encodeBytes32String(symbol));
+}
+
+async function getOrders(orderBookDex: OrderBookDex, symbol: string, orderSide: number): Promise<OrderBookDex.OrderStructOutput[]> {
+    return await orderBookDex.getOrders(ethers.encodeBytes32String(symbol), orderSide);
+}
+
+async function assertOrder(
+    actual: OrderBookDex.OrderStructOutput, 
+    traderIndex: number, 
+    symbol: string, 
+    amount: string, 
+    price: string, 
+    orderSide: number, 
+    orderType: number
+) {
+    const traders = await ethers.getSigners();
+
+    expect(actual.traderAddress).to.be.equals(traders.at(traderIndex)?.address);
+    expect(actual.orderSide).to.be.equals(orderSide);
+    expect(actual.orderType).to.be.equals(orderType);
+    expect(actual.ticker).to.be.equals(ethers.encodeBytes32String(symbol));
+    expect(actual.amount).to.be.equals(ethers.parseUnits(amount, 'ether'));
+    expect(actual.price).to.be.equals(ethers.parseUnits(price, 'ether'));
+}
+
+async function getBalance(orderBookDex: OrderBookDex, address: string, symbol: string): Promise<{free: bigint; locked: bigint;}> {
+    return await orderBookDex.balances(address, ethers.encodeBytes32String(symbol));
+}
+
 export {
     deployOrderBookContract, 
     deployTokenTest, 
     getContractDetails, 
     seedTradersWallets,
-    addToken
+    addToken,
+    placeOrder,
+    setQuoteTicker,
+    getOrders,
+    assertOrder,
+    getBalance
 };
