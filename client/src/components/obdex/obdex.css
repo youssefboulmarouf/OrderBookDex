@@ -1,0 +1,38 @@
+.obdex {
+  height: calc(100vh - 70px);
+  margin-top: 70px;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+  
+.custom-box {
+  border-color: rgba(100, 100, 100, 0.1);
+  background-color: #072a3b;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.right-box {
+  margin-right: 5px;
+}
+
+.middle-box {
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+@media (max-width: 768px) {
+  .middle-box {
+    margin-right: 0px;
+    margin-left: 0px;
+  }
+}
+
+.left-box {
+  margin-left: 5px;
+}
+
+.dex-chart {
+  padding: 5px;
+  height: calc(60vh + 5px);
+}
