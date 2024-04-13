@@ -44,6 +44,15 @@ async function main() {
     const zrxAddress: string = await zrxToken.getAddress();
     const zrxSymbol: string = await zrxToken.symbol();
 
+    // Deploy ZRX Token
+    const batToken: TestToken = await deployToken('Brave Token', 'BAT');
+    const batAddress: string = await batToken.getAddress();
+    const batSymbol: string = await batToken.symbol();
+    
+    console.log('daiAddress: ', daiAddress)
+    console.log('zrxAddress: ', zrxAddress)
+    console.log('batAddress: ', batAddress)
+
     // Deploy Order Book Dex
     const orderBookDex = await ethers.deployContract("OrderBookDex");
     await orderBookDex.waitForDeployment();
@@ -52,6 +61,7 @@ async function main() {
     // Add DAI and ZRX tokens
     await orderBookDex.addToken(ethers.encodeBytes32String(daiSymbol), daiAddress);
     await orderBookDex.addToken(ethers.encodeBytes32String(zrxSymbol), zrxAddress);
+    await orderBookDex.addToken(ethers.encodeBytes32String(batSymbol), batAddress);
 
     const [owner, trader1, trader2, trader3, others] = await ethers.getSigners();
 
@@ -65,43 +75,72 @@ async function main() {
         })
     );
 
+    console.log('owner: ', owner.address)
+    console.log('trader1: ', trader1.address)
+    console.log('trader2: ', trader2.address)
+    console.log('trader3: ', trader3.address)
+
     // Place Orders
     await orderBookDex.connect(trader1).placeOrder({
         ticker: ethers.encodeBytes32String(zrxSymbol),
-        amount: ethers.parseUnits('1', 'ether'),
-        price: 10,
+        amount: ethers.parseUnits('10', 'ether'),
+        price: ethers.parseUnits('1', 'ether'),
         orderSide: ORDER_SIDE.BUY,
         orderType: ORDER_TYPE.LIMIT
     });
 
     await orderBookDex.connect(trader1).placeOrder({
         ticker: ethers.encodeBytes32String(zrxSymbol),
-        amount: ethers.parseUnits('2', 'ether'),
-        price: 20,
+        amount: ethers.parseUnits('10', 'ether'),
+        price: ethers.parseUnits('2', 'ether'),
         orderSide: ORDER_SIDE.BUY,
         orderType: ORDER_TYPE.LIMIT
     });
 
     await orderBookDex.connect(trader2).placeOrder({
         ticker: ethers.encodeBytes32String(zrxSymbol),
-        amount: ethers.parseUnits('3', 'ether'),
-        price: 30,
-        orderSide: ORDER_SIDE.SELL,
+        amount: ethers.parseUnits('10', 'ether'),
+        price: ethers.parseUnits('3', 'ether'),
+        orderSide: ORDER_SIDE.BUY,
         orderType: ORDER_TYPE.LIMIT
     });
 
     await orderBookDex.connect(trader3).placeOrder({
         ticker: ethers.encodeBytes32String(zrxSymbol),
-        amount: ethers.parseUnits('4', 'ether'),
-        price: 40,
+        amount: ethers.parseUnits('10', 'ether'),
+        price: ethers.parseUnits('4', 'ether'),
         orderSide: ORDER_SIDE.SELL,
         orderType: ORDER_TYPE.LIMIT
     });
 
     await orderBookDex.connect(trader1).placeOrder({
         ticker: ethers.encodeBytes32String(zrxSymbol),
+        amount: ethers.parseUnits('10', 'ether'),
+        price: ethers.parseUnits('5', 'ether'),
+        orderSide: ORDER_SIDE.SELL,
+        orderType: ORDER_TYPE.LIMIT
+    });
+
+    await orderBookDex.connect(trader2).placeOrder({
+        ticker: ethers.encodeBytes32String(zrxSymbol),
+        amount: ethers.parseUnits('10', 'ether'),
+        price: ethers.parseUnits('6', 'ether'),
+        orderSide: ORDER_SIDE.SELL,
+        orderType: ORDER_TYPE.LIMIT
+    });
+
+    await orderBookDex.connect(trader2).placeOrder({
+        ticker: ethers.encodeBytes32String(zrxSymbol),
         amount: ethers.parseUnits('1', 'ether'),
-        price: 40,
+        price: ethers.parseUnits('2', 'ether'),
+        orderSide: ORDER_SIDE.SELL,
+        orderType: ORDER_TYPE.LIMIT
+    });
+
+    await orderBookDex.connect(trader3).placeOrder({
+        ticker: ethers.encodeBytes32String(zrxSymbol),
+        amount: ethers.parseUnits('3', 'ether'),
+        price: ethers.parseUnits('3', 'ether'),
         orderSide: ORDER_SIDE.SELL,
         orderType: ORDER_TYPE.LIMIT
     });
