@@ -39,27 +39,27 @@ const AddQuoteToken: React.FC<AddQuoteTokenProps> = (props) => {
     }, []);
 
     return (
-        <>
-        <div>
-            <h4>Quote Token</h4>
+        <div className='add-quote-token'>
+            <div>
+                <h4>Quote Token</h4>
+            </div>
+            <Dropdown className='admin-dropdown' onSelect={(item) => setQuoteTicker((item !== null) ? item : '')}>
+                <Dropdown.Toggle className='admin-dropdown-toggle' >
+                    <span>{quoteTicker ? `${quoteTicker} ` : 'Select Quote Token'}</span>
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu  className='admin-dropdown-menu'>
+                    {props.tokens.map((token) => (
+                        <Dropdown.Item key={token.ticker} eventKey={ethers.decodeBytes32String(token.ticker)}>
+                            {ethers.decodeBytes32String(token.ticker)}
+                        </Dropdown.Item>
+                    ))}
+                </Dropdown.Menu>
+            </Dropdown>
+
+            <br/>
+            <Button variant='info' disabled={quoteTickerToDisable != ''} onClick={setQuoteToken}>Set Quote Token</Button>
         </div>
-        <Dropdown className='admin-dropdown' onSelect={(item) => setQuoteTicker((item !== null) ? item : '')}>
-            <Dropdown.Toggle disabled={!!quoteTickerToDisable}>
-                <span className='admin-dropdown-toggle-left-side'>{quoteTicker ? `${quoteTicker} ` : 'Select Quote Token'}</span>
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu>
-                {props.tokens.map((token) => (
-                    <Dropdown.Item key={token.ticker} eventKey={ethers.decodeBytes32String(token.ticker)}>
-                        {ethers.decodeBytes32String(token.ticker)}
-                    </Dropdown.Item>
-                ))}
-            </Dropdown.Menu>
-        </Dropdown>
-
-        <br/>
-        <Button disabled={quoteTickerToDisable != ''} onClick={setQuoteToken}>Set Quote Token</Button>
-        </>
     );
 }
 
