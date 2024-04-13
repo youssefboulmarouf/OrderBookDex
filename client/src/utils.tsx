@@ -20,6 +20,10 @@ const handleError = (e: unknown) => {
         const err: Error = e;
         const match = err.message.substring(err.message.indexOf('('), err.message.lastIndexOf(')') + 1).match(/reason="(.*?)"/);
         console.error('match: ', match?.at(1)?.toString());
+
+        if (match == undefined) {
+            console.error('Unhandled error:', e);
+        }
     } else {
         console.error('Unhandled error:', e);
     }
