@@ -37,17 +37,17 @@ const MarketDropDown: React.FC<MarketDropdownProps> = (props) => {
     }, [selectedAsset])
     
     return (
-        <Dropdown className="transparent-dropdown" onSelect={(item) => setSelectedAsset((item !== null) ? item : '')}>
-            <Dropdown.Toggle>
+        <Dropdown className="market-dropdown" onSelect={(item) => setSelectedAsset((item !== null) ? item : '')}>
+            <Dropdown.Toggle className="market-dropdown-toggle">
                 <span className='dropdown-toggle-left-side'>
                     {selectedAsset ? `${selectedAsset} ` : ''}
                 </span>
                 <span className='dropdown-toggle-right-side'>Asset</span>
             </Dropdown.Toggle>
 
-            <Dropdown.Menu>
+            <Dropdown.Menu className="market-dropdown-menu">
                 {props.tokens.map((token) => (
-                    <Dropdown.Item key={token.ticker} eventKey={ethers.decodeBytes32String(token.ticker)}>
+                    <Dropdown.Item  className="market-dropdown-item" key={token.ticker} eventKey={ethers.decodeBytes32String(token.ticker)}>
                         {ethers.decodeBytes32String(token.ticker)}
                     </Dropdown.Item>
                 ))}
