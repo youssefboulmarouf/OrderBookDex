@@ -4,7 +4,7 @@ import { TokenProps } from '../common/common-props';
 
 import { Table } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
-import { CheckCircleFill, PlusSquareFill, XCircleFill, XSquareFill } from 'react-bootstrap-icons';
+import { Check, CheckCircleFill, Plus, PlusSquareFill, X, XCircleFill, XSquareFill } from 'react-bootstrap-icons';
 
 
 interface TokensListProps {
@@ -20,42 +20,40 @@ const TokensList: React.FC<TokensListProps> = (props) => {
             <h4>Tokens List</h4>
         </div>
         <Table>
-            <thead>
+            <thead className='header-text'>
                 <tr>
                     <th>Ticker</th>
-                    <th className='d-none d-lg-table-cell'>HEX Ticker</th>
                     <th className='d-none d-sm-table-cell'>Token Address</th>
                     <th>Status</th>
-                    <th>Enable/Disable</th>
+                    <th className='center-text-align'>Enable/Disable</th>
                 </tr>
             </thead>
             <tbody>
                 {props.tokens.map(token => (
                     <tr key={token.ticker}>
                         <td>{ethers.decodeBytes32String(token.ticker)}</td>
-                        <td className='d-none d-lg-table-cell'>{token.ticker}</td>
                         <td className='d-none d-sm-table-cell'>{token.tokenAddress}</td>
                         <td>
                             {(token.isTradable)
-                                ? <CheckCircleFill color='green' size={20}/>
-                                : <XCircleFill color='red' size={20}/>
+                                ? <Check color='#efbf45' size={25}/>
+                                : <X color='#efbf45' size={25}/>
                             }
                         </td>
-                        <td>
+                        <td className='center-text-align'>
                             {(token.isTradable)
                                 ? <Button 
                                     className='enable-disable-token-button' 
-                                    variant='' 
+                                    variant='danger' 
                                     onClick={(e) => props.disableToken(e, token)}
                                 >
-                                    <XSquareFill color='red' size={20}/>
+                                    <X size={20}/>
                                 </Button>
                                 : <Button 
                                     className='enable-disable-token-button' 
-                                    variant='' 
+                                    variant='success' 
                                     onClick={(e) => props.enableToken(e, token)}
                                 >
-                                    <PlusSquareFill color='green' size={20}/>
+                                    <Plus size={20}/>
                                 </Button>
                             }
                         </td>
