@@ -1,103 +1,125 @@
+/* App.css */
 .App {
-    text-align: center;
+  background-color: hsl(225, 3%, 52%);
+  color: white;
+  display: flex;
+  flex-direction: column;
 }
 
-.App-link {
-    color: #61dafb;
-}
-
-.navbar-style {
-    margin: 5px; 
-    border-radius: 10px;
-}
-
-.default-box-layout {
-    margin: 5px;
-    border-radius: 10px; 
-    background-color: gray;
-}
-
-.admin-button {
-    margin-right: 10px;
-}
-
-.action-button {
-    margin: 0px;
-    padding: 0px;
-}
-
-.title-box {
-    padding-top: 10px;
-    display: flex;
-    justify-content: center;
+.content {
+  background-color: #072a3b;
+  border-radius: 10px;
+  margin: 5px; 
+  display: flex;
+  align-items: center;
+  height: calc(100vh - 75px);
+  margin-top: 70px;
 }
 
 .inner-box {
-    margin-left: 10px;
-    margin-right: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
-.button-group {
-    background-color: rgba(255, 255, 255, 0.5);
-    margin-top: 5px;
-    margin-bottom: 5px;
-    width: 100%;
-    border-radius: 10px;
-    display: flex;
-    justify-content: stretch;
+.centered-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
 }
 
-.progress-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.footer-content {
+  background-color: #072a3b;
+  margin: 5px; 
+  padding: 10px !important;
+  bottom: 5px;
+  border-radius: 10px;
+  height: 60px;
+  align-items: center;
 }
 
-.custom-input-group {
-    position: relative;
+.buy-row {
+  color: #17a24d;
 }
 
-.input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin-top: 10px;
+.sell-row {
+  color: #f20a2e;
 }
 
-.custom-input-group .form-control {
-    padding-left: 80px; /* Space for custom placeholder */
-    padding-right: 80px; /* Space for 'Assets' text */
-    text-align: right;
+.center-text-align {
+  text-align: center;
 }
 
-.custom-placeholder, .input-addon {
-    position: absolute;
-    pointer-events: none; /* Makes it unclickable */
-    color: #6c757d; /* Bootstrap's default placeholder color */
+.right-text-align {
+  text-align: right;
 }
 
-.custom-placeholder {
-    left: 10px; /* Adjust as needed */
+.trade-table {
+  width: 100%;
+  background-color: transparent;
 }
 
-.input-addon {
-    right: 10px; /* Adjust as needed */
-    margin-top: 1.5rem;
-    transform: translateY(-50%);
+.trade-table th {
+  font-size: small;
+  color: gray;
 }
 
-.place-order-button {
-    width: 100%;
-    border-radius: 10px;
-    font-size: 1.25rem; /* Larger font size */
+.trade-table td {
+  font-size: medium;
 }
 
-.custom-input-group .form-control::-webkit-inner-spin-button,
-.custom-input-group .form-control::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.title-box {
+  padding-top: 10px;
+  display: flex;
+  justify-content: center;
 }
 
-input[type=number] {
-    -moz-appearance: textfield;
+.header-text {
+  font-size: small;
+  color: rgb(145, 149, 185);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: gray;
+  border-radius: 4px;
+}
+
+@media (min-height: 70rem)  {
+  .user-orders-trades {
+    padding: 5px;
+    height: 33vh;
+  }
+
+  .tab-content-body {
+    max-height: calc(34vh - 95px);
+  }
+
+  .user-wallet {
+    height: 19.5vh;
+  }
+
+  .place-orders {
+    height: 25.5vh;
+  }
+
+  .dex-trades {
+    height: 34.5vh;
+  }
+
+  .order-book {
+    height: 40.5vh;
+  }
+
+  .body-40 {
+    height: 42%;
+  }
+  
 }
