@@ -14,4 +14,19 @@ $theme-colors: (
     "danger":     #f20a2e,
 );
 
+$grid-gutter-width: 0px;
+$navbar-light-toggler-border-color: #efbf45;
+$navbar-light-icon-color:           #efbf45;
+
+$nav-tabs-link-active-bg: #efbf45;
+$nav-tabs-link-active-color: rgb(0, 0, 0);
+$nav-tabs-link-hover-border-color: #efbf45;
+$nav-tabs-link-active-border-color: #efbf45;
+$nav-tabs-border-color: #efbf45;
+
+$nav-link-color: #efbf45;
+$nav-link-hover-color: #e9cd45;
+
+$table-bg: 'transparent';
+
 @import '~bootstrap/scss/bootstrap';
