@@ -1,0 +1,12 @@
+.dex-trades {
+  padding: 5px;
+  height: 30vh;
+}
+
+.all-trades-body {
+  overflow-y: auto;
+}
+
+.body-95 {
+  height: 95%;
+}
