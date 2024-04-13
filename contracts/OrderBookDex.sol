@@ -16,47 +16,49 @@ contract OrderBookDex {
     }
 
     struct Balance { 
-        uint free; 
-        uint locked;
+        uint256 free; 
+        uint256 locked;
     }
 
     struct Order { 
-        uint id;
+        uint256 id;
         address traderAddress;
         ORDER_SIDE orderSide;
         ORDER_TYPE orderType;
         bytes32 ticker; 
-        uint amount; 
-        uint[] fills; 
-        uint price; 
-        uint date;
+        uint256 amount; 
+        uint256[] fills; 
+        uint256 price; 
+        uint256 date;
     }
 
-    struct OrpderParams {
+    struct OrderParams {
         bytes32 ticker;
-        uint amount;
-        uint price;
+        uint256 amount;
+        uint256 price;
         ORDER_SIDE orderSide;
         ORDER_TYPE orderType;
     }
 
     event NewTrade( 
-        uint tradeId, 
-        uint buyOrderId, 
-        uint sellOrderId, 
+        uint256 tradeId, 
+        uint256 makerOrderId, 
+        uint256 takerOrderId, 
         bytes32 indexed ticker, 
-        address indexed buyerTrader, 
-        address indexed sellerTraderr, 
-        uint amount, 
-        uint price, 
-        uint date
+        address indexed makerTrader, 
+        address indexed takerTrader, 
+        ORDER_TYPE takerOderType,
+        ORDER_SIDE takerTradeSide,
+        uint256 amount, 
+        uint256 price,
+        uint256 date
     );
 
     address public admin;
     bytes32[] public tickerList;
     bytes32 public quoteTicker;
-    uint public nextOrderId;
-    uint public nextTradeId;
+    uint256 public nextOrderId;
+    uint256 public nextTradeId;
 
     mapping (bytes32 => Token) public tokens;
     mapping (address => mapping (bytes32 => Balance)) public balances;
@@ -67,9 +69,12 @@ contract OrderBookDex {
         quoteTicker = bytes32(0);
     }
 
-    function isAdmin() external view returns (bool) {
-        return admin == msg.sender;
-    }
+    function isAdmin()
+        external
+        view
+        returns (bool) {
+            return admin == msg.sender;
+        }
 
     function setQuoteTicker(bytes32 _ticker) 
         external 
@@ -95,7 +100,7 @@ contract OrderBookDex {
             Token[] memory _tokens = new Token[](tickerList.length);
 
             // Populating the list a memory list of Tokens
-            for (uint i = 0; i < tickerList.length; i++) {
+            for (uint256 i = 0; i < tickerList.length; i++) {
                 bytes32 currentTicker = tickerList[i];
                 address tokenAddress = tokens[currentTicker].tokenAddress;
                 bool isTradable = tokens[currentTicker].isTradable;
@@ -122,7 +127,7 @@ contract OrderBookDex {
             tokens[_ticker].isTradable = true;
         }
 
-    function deposit(bytes32 _ticker, uint _amount) 
+    function deposit(bytes32 _ticker, uint256 _amount) 
         external 
         payable
         tokenExist(_ticker) {
@@ -131,7 +136,7 @@ contract OrderBookDex {
             balances[msg.sender][_ticker].free = balances[msg.sender][_ticker].free + _amount;
         }
 
-    function withdraw(bytes32 _ticker, uint _amount) 
+    function withdraw(bytes32 _ticker, uint256 _amount) 
         external 
         tokenExist(_ticker) 
         hasEnoughBalance(_ticker, _amount) {
@@ -147,96 +152,244 @@ contract OrderBookDex {
             return orderBook[_ticker][_side];
         }
 
-    function placeOrder(OrpderParams memory _params) 
+    function placeOrder(OrderParams memory _params) 
         external 
         placeOrderModifier(_params)
-        hasEnoughTokenToSell(_params) {
+        ordersExists(_params.ticker, _params.orderSide, _params.orderType) {
+            uint256 price = 0;
+
             if (_params.orderType == ORDER_TYPE.LIMIT) {
-                createLimitOrder(_params.ticker, _params.amount, _params.price, _params.orderSide);
-            } else if (_params.orderType == ORDER_TYPE.MARKET) {
-                createMarketOrder(_params.ticker, _params.amount, _params.orderSide);
+                price = _params.price;
             } else {
-                revert('Unkown Order Type!');
+                price = deduceMarketPrice(_params.ticker, _params.orderSide);
             }
-        }
-    
-    function createLimitOrder(bytes32 _ticker, uint _amount, uint _price, ORDER_SIDE _side) 
-        internal
-        hasEnoughTokenToBuy(_amount, _price, _side) {
-            lockOrderAmount(_ticker, _amount, _price, _side, ORDER_TYPE.LIMIT);
-            Order storage newOrder = createOrder(_ticker, _amount, _price, _side, ORDER_TYPE.LIMIT);
-            sortOrders(_ticker, _side);
-            matchOrders(newOrder);
-        }
-    
-    function createMarketOrder(bytes32 _ticker, uint _amount, ORDER_SIDE _side)  
-        internal
-        ordersExists(_ticker, _side) {
+
+            lockOrderAmount(_params.ticker, _params.amount, price, _params.orderSide, _params.orderType);
             
+            Order memory newOrder = createOrder(_params.ticker, _params.amount, price, _params.orderSide, _params.orderType);
+            
+            sortOrders(_params.ticker, _params.orderSide);
+            
+            uint256 orderIndex = findOrderById(_params.ticker, _params.orderSide, newOrder.id);
+            Order[] storage orders = orderBook[_params.ticker][_params.orderSide];
+            
+            matchOrders(orders[orderIndex]);
+            cleanOrders(_params.ticker);
         }
 
-    function lockOrderAmount(bytes32 _ticker, uint _amount, uint _price, ORDER_SIDE _side, ORDER_TYPE _orderType) 
+    function lockOrderAmount(bytes32 _ticker, uint256 _amount, uint256 _price, ORDER_SIDE _side, ORDER_TYPE _type) 
         internal {
             bytes32 tokenToLock = _ticker;
-            uint amountToLock = _amount;
+            uint256 amountToLock = deduceAmountToLock(_ticker, _amount, _price, _side, _type);
 
             if (_side == ORDER_SIDE.BUY) {
                 tokenToLock = quoteTicker;
-                if (_orderType == ORDER_TYPE.LIMIT) { 
-                    amountToLock = _amount * _price;
-                }
+                require(balances[msg.sender][tokenToLock].free >= amountToLock, "Low Quote Balance!");
+            } else {    
+                require(balances[msg.sender][tokenToLock].free >= amountToLock, "Low Token Balance!");
             }
-
+            
             balances[msg.sender][tokenToLock].free = balances[msg.sender][tokenToLock].free - amountToLock;
             balances[msg.sender][tokenToLock].locked = balances[msg.sender][tokenToLock].locked + amountToLock;
         }
 
-    function createOrder(bytes32 _ticker, uint _amount, uint _price, ORDER_SIDE _side, ORDER_TYPE _orderType) 
+    
+    function deduceAmountToLock(bytes32 _ticker, uint256 _amount, uint256 _price, ORDER_SIDE _side, ORDER_TYPE _type) 
         internal 
-        returns (Order storage) {
-            uint[] memory fills;
+        view 
+        returns(uint256) {
+            Order[] memory oppositeOrders = orderBook[_ticker][_side == ORDER_SIDE.BUY ? ORDER_SIDE.SELL : ORDER_SIDE.BUY];
 
+            if (oppositeOrders.length == 0 && _type == ORDER_TYPE.LIMIT) {
+                return (_side == ORDER_SIDE.BUY) 
+                    ? (_amount * _price) / 1e18 
+                    : _amount;
+            }
+
+            uint256 remaining = _amount;
+            uint256 amountToLock = 0;
+            uint256 index = 0;
+
+            while (index < oppositeOrders.length && remaining > 0) {
+                if (
+                    (_side == ORDER_SIDE.BUY && oppositeOrders[index].price <= _price) 
+                    || (_side == ORDER_SIDE.SELL && oppositeOrders[index].price >= _price) 
+                    || _type == ORDER_TYPE.MARKET
+                ) {
+                    uint256 orderAmountFilled = amountFilled(oppositeOrders[index]);
+                    uint256 availableOrderAmount = oppositeOrders[index].amount - orderAmountFilled;
+                    uint256 matched = (remaining > availableOrderAmount) ? availableOrderAmount : remaining;
+
+                    amountToLock = (_side == ORDER_SIDE.BUY) 
+                        ? amountToLock + (oppositeOrders[index].price * matched) / 1e18
+                        : amountToLock + matched;
+
+                    remaining = remaining - matched;
+                }
+                index = index + 1;
+            }
+
+            if (remaining > 0 && _type == ORDER_TYPE.LIMIT) {
+                amountToLock = (_side == ORDER_SIDE.BUY) 
+                    ? amountToLock + (_price * remaining) / 1e18 
+                    : amountToLock + remaining;
+            }
+
+            return amountToLock;
+        }
+
+    function createOrder(bytes32 _ticker, uint256 _amount, uint256 _price, ORDER_SIDE _side, ORDER_TYPE _orderType) 
+        internal 
+        returns (Order memory) {
+            uint256[] memory fills;
             nextOrderId = nextOrderId + 1;
 
             Order memory newOrder = Order(nextOrderId, msg.sender, _side, _orderType, _ticker, _amount, fills, _price, block.timestamp);
             orderBook[_ticker][_side].push(newOrder);
             
-            return orderBook[_ticker][_side][(orderBook[_ticker][_side].length - 1)];
+            return newOrder;
         }
     
     function sortOrders(bytes32 _ticker, ORDER_SIDE _side) 
-        internal {
-        
+        internal {   
             Order[] storage orders = orderBook[_ticker][_side];
-            uint index = (orders.length > 0) ? (orders.length - 1) : 0;
+            uint256 index = (orders.length > 0) ? (orders.length - 1) : 0;
             
             while(index > 0) {
-                if (orders[index - 1].price > orders[index].price) {
-                    Order memory order = orders[index - 1];
-                    orders[index - 1] = orders[index];
-                    orders[index] = order;
-                } else if (orders[index - 1].price == orders[index].price && orders[index - 1].date > orders[index].date) {
-                    Order memory order = orders[index - 1];
-                    orders[index - 1] = orders[index];
-                    orders[index] = order;
+                if ((_side == ORDER_SIDE.SELL && orders[index - 1].price > orders[index].price)
+                    || (_side == ORDER_SIDE.BUY && orders[index - 1].price < orders[index].price)
+                ) {
+                    switchOrderSorting(orders, index);
+                } else if ((_side == ORDER_SIDE.SELL && orders[index - 1].price == orders[index].price && orders[index - 1].date > orders[index].date)
+                    || (_side == ORDER_SIDE.BUY && orders[index - 1].price == orders[index].price && orders[index - 1].date < orders[index].date)
+                ) {
+                    switchOrderSorting(orders, index);
                 }
                 index = index - 1;
             }
         }
-
-    function matchOrders(Order storage newOrder) 
+    
+    function switchOrderSorting(Order[] storage orders, uint index) 
         internal {
+            Order memory order = orders[index - 1];
+            orders[index - 1] = orders[index];        
+            orders[index] = order;
+        }
 
+    function matchOrders(Order storage _newOrder) 
+        internal {
+            Order[] storage oppositeOrders = orderBook[_newOrder.ticker][_newOrder.orderSide == ORDER_SIDE.BUY ? ORDER_SIDE.SELL : ORDER_SIDE.BUY];
+
+            uint256 index;
+            uint256 remaining = _newOrder.amount;
+
+            while(index < oppositeOrders.length && remaining > 0) {
+                if (_newOrder.orderType == ORDER_TYPE.LIMIT) {
+                    if (_newOrder.orderSide == ORDER_SIDE.BUY && _newOrder.price >= oppositeOrders[index].price
+                        || _newOrder.orderSide == ORDER_SIDE.SELL && _newOrder.price <= oppositeOrders[index].price
+                    ) {
+                        matchSingleOrder(_newOrder, oppositeOrders[index], remaining);
+                    }
+                } else {
+                    matchSingleOrder(_newOrder, oppositeOrders[index], remaining);
+                }
+
+                remaining = _newOrder.amount - amountFilled(_newOrder);
+                index = index + 1;
+            }
         }
     
-    function amountFilled(Order memory order) 
+    function matchSingleOrder(Order storage _newOrder, Order storage _oppositeOrder, uint256 _remaining) 
+        internal {
+            uint256 orderAmountFilled = amountFilled(_oppositeOrder);
+            uint256 available = _oppositeOrder.amount - orderAmountFilled;
+            uint256 matched = (_remaining > available) ? available : _remaining;
+            
+            _oppositeOrder.fills.push(matched);
+            _newOrder.fills.push(matched);
+
+            adjustBalances(_newOrder, _oppositeOrder, matched);
+            emitNewTradeEvent(_newOrder, _oppositeOrder, matched);
+        }
+    
+    function adjustBalances(Order storage _newOrder, Order storage _oppositeOrder, uint256 _matched) 
+        internal {
+            uint256 finalPrice = (_matched * _oppositeOrder.price) / 1e18;
+
+            if(_newOrder.orderSide == ORDER_SIDE.SELL) {
+                balances[msg.sender][_newOrder.ticker].locked = balances[msg.sender][_newOrder.ticker].locked - _matched;
+                balances[_oppositeOrder.traderAddress][quoteTicker].locked = balances[_oppositeOrder.traderAddress][quoteTicker].locked - finalPrice;
+
+                balances[msg.sender][quoteTicker].free = balances[msg.sender][quoteTicker].free + finalPrice;
+                balances[_oppositeOrder.traderAddress][_newOrder.ticker].free = balances[_oppositeOrder.traderAddress][_newOrder.ticker].free + _matched;
+            } else if(_newOrder.orderSide == ORDER_SIDE.BUY) {
+                balances[msg.sender][quoteTicker].locked = balances[msg.sender][quoteTicker].locked - finalPrice;
+                balances[_oppositeOrder.traderAddress][_newOrder.ticker].locked = balances[_oppositeOrder.traderAddress][_newOrder.ticker].locked - _matched;
+
+                balances[msg.sender][_newOrder.ticker].free = balances[msg.sender][_newOrder.ticker].free + _matched;
+                balances[_oppositeOrder.traderAddress][quoteTicker].free = balances[_oppositeOrder.traderAddress][quoteTicker].free + finalPrice;
+            }
+        }
+    
+    function findOrderById(bytes32 _ticker, ORDER_SIDE _side, uint256 _orderId) 
+        internal 
+        view 
+        returns (uint256) {
+            Order[] storage orders = orderBook[_ticker][_side];
+
+            uint256 orderIndex;
+            bool orderFound = false;
+            
+            // Look for order index with id = _orderId
+            for (uint256 i = 0; i < orders.length; i = i + 1) {
+                if (orders[i].id == _orderId) {
+                    orderIndex = i;
+                    orderFound = true;
+                    break;
+                }
+            }
+
+            require(orderFound == true, "Order Not Found!");
+
+            return orderIndex;
+        }
+    
+    function cleanOrders(bytes32 _ticker) 
+        internal {
+            clearFilledOrdersSide(_ticker, ORDER_SIDE.BUY);
+            clearFilledOrdersSide(_ticker, ORDER_SIDE.SELL);
+        }
+
+    function clearFilledOrdersSide(bytes32 _ticker, ORDER_SIDE _side) 
+        internal {
+            uint256 index = 0;
+            Order[] storage orders = orderBook[_ticker][_side];
+            
+            while(index < orders.length) {
+                bool isOffset = false;
+                if (amountFilled(orders[index]) == orders[index].amount || orders[index].orderType == ORDER_TYPE.MARKET) {
+                    for(uint256 j = index; j < orders.length - 1; j = j + 1) {
+                        orders[j] = orders[j + 1];
+                        isOffset = true;
+                    }
+
+                    orders.pop();
+                }
+
+                if(!isOffset) {
+                    index = index + 1;
+                }
+            }
+        }
+
+    function amountFilled(Order memory _order) 
         internal 
         pure
-        returns(uint) {
-            uint filledAmount;
+        returns(uint256) {
+            uint256 filledAmount;
             
-            for (uint i; i < order.fills.length; i = i + 1) {
-                filledAmount = filledAmount + order.fills[i];
+            for (uint256 i; i < _order.fills.length; i = i + 1) {
+                filledAmount = filledAmount + _order.fills[i];
             }
 
             return filledAmount;
@@ -245,37 +398,57 @@ contract OrderBookDex {
     function deduceMarketPrice(bytes32 _ticker, ORDER_SIDE _side) 
         internal 
         view 
-        returns(uint) {
+        returns(uint256) {
             Order[] memory orders = orderBook[_ticker][_side == ORDER_SIDE.BUY ? ORDER_SIDE.SELL : ORDER_SIDE.BUY];
-            uint index = _side == ORDER_SIDE.BUY ? 0 : orders.length - 1;
-            return orders[index].price;
+            return orders[0].price;
         }
 
-    function cancelOrder(bytes32 _ticker, uint _orderId, ORDER_SIDE _side) 
-        external {
-            
-        }
+    function cancelOrder(bytes32 _ticker, uint256 _orderId, ORDER_SIDE _side) 
+        external 
+        tokenExist(_ticker) 
+        isNotQuoteTicker(_ticker) {
+            Order[] storage orders = orderBook[_ticker][_side];
+            uint256 orderIndex = findOrderById(_ticker, _side, _orderId);
 
-    function emitNewTradeEvent(Order storage _orderToMatch, Order storage _oppositeOrder, uint _matched)
-        internal {
-            Order memory buyOrder;
-            Order memory sellOrder;
+            Order memory order = orders[orderIndex];
 
-            if (_orderToMatch.orderSide == ORDER_SIDE.BUY) {
-                buyOrder = _orderToMatch;
-                sellOrder = _oppositeOrder;
+            require(order.orderType == ORDER_TYPE.LIMIT, "Only Limit Orders can be canceled");
+            require(order.traderAddress == msg.sender, "Unauthorized!");
+
+            bytes32 tickerToUnlock;
+            uint256 amoutToUnlock;
+            if (order.orderSide == ORDER_SIDE.BUY) {
+                tickerToUnlock = quoteTicker;
+                amoutToUnlock = (order.amount - amountFilled(order)) * order.price / 1e18;
             } else {
-                buyOrder = _oppositeOrder;
-                sellOrder = _orderToMatch;
+                tickerToUnlock = _ticker;
+                amoutToUnlock = order.amount - amountFilled(order);
             }
-            
+
+            for (uint256 i = orderIndex; i < orders.length - 1; i = i + 1) {
+                orders[i] = orders[i + 1];
+            }
+
+            orders.pop();
+
+            if (amoutToUnlock > 0) {
+                balances[msg.sender][tickerToUnlock].locked = balances[msg.sender][tickerToUnlock].locked - amoutToUnlock;
+                balances[msg.sender][tickerToUnlock].free = balances[msg.sender][tickerToUnlock].free + amoutToUnlock;
+            }
+        }
+
+    function emitNewTradeEvent(Order storage _orderToMatch, Order storage _oppositeOrder, uint256 _matched)
+        internal {            
+            nextTradeId = nextTradeId + 1;
             emit NewTrade(
                 nextTradeId, 
-                buyOrder.id, 
-                sellOrder.id, 
+                _oppositeOrder.id, 
+                _orderToMatch.id, 
                 _orderToMatch.ticker, 
-                buyOrder.traderAddress, 
-                sellOrder.traderAddress, 
+                _oppositeOrder.traderAddress, 
+                _orderToMatch.traderAddress, 
+                _orderToMatch.orderType,
+                _orderToMatch.orderSide,
                 _matched, 
                 _oppositeOrder.price, 
                 block.timestamp
@@ -327,13 +500,13 @@ contract OrderBookDex {
         _;
     }
 
-    modifier hasEnoughBalance(bytes32 _ticker, uint _amount) {
+    modifier hasEnoughBalance(bytes32 _ticker, uint256 _amount) {
         require(balances[msg.sender][_ticker].free >= _amount, "Low Balance!");
         _;
     }
 
-    modifier placeOrderModifier(OrpderParams memory _params) {
-        // Tokne Exists
+    modifier placeOrderModifier(OrderParams memory _params) {
+        // Token Exists
         require(tokens[_params.ticker].tokenAddress != address(0), "Ticker Does Not Exist!");
 
         // Token Enabled
@@ -344,31 +517,22 @@ contract OrderBookDex {
 
         // Is Not Quote Ticker
         require(quoteTicker != _params.ticker, "Quote Ticker!");
+
+        // Only Limit and Market Order Types Allowed
+        require(_params.orderType == ORDER_TYPE.LIMIT || _params.orderType == ORDER_TYPE.MARKET, "Unkown Order Type!");
+
+        // Only Buy and Sell Order Side Allowed
+        require(_params.orderSide == ORDER_SIDE.BUY || _params.orderSide == ORDER_SIDE.SELL, "Unkown Order Side!");
         _;
     }
 
-    modifier hasEnoughTokenToSell(OrpderParams memory _params) {
-        if (_params.orderSide == ORDER_SIDE.SELL) {
-            require(balances[msg.sender][_params.ticker].free >= _params.amount, "Low Token Balance!");
-        }
-        _;
-    }
-
-    modifier hasEnoughTokenToBuy(uint _amount, uint _price, ORDER_SIDE _side) {
-        // This should ONLY be checked on LIMIT orders 
-        // since we know the exact amount and price
-        // which is not the case in MARKET orders
-        if (_side == ORDER_SIDE.BUY) {
-            require(balances[msg.sender][quoteTicker].free >= _amount * _price, "Low Quote Balance!");
-        }
-        _;
-    }
-
-    modifier ordersExists(bytes32 _ticker, ORDER_SIDE _side) {
+    modifier ordersExists(bytes32 _ticker, ORDER_SIDE _side, ORDER_TYPE _type) {
         // This should ONLY be checked on MARKET orders 
         // since we need opposite orders to exist for the matching to happen
-        Order[] memory orders = orderBook[_ticker][(_side == ORDER_SIDE.BUY ? ORDER_SIDE.SELL : ORDER_SIDE.BUY)];
-        require(orders.length > 0, "Empty Order Book!");
+        if (_type == ORDER_TYPE.MARKET) {
+            Order[] memory orders = orderBook[_ticker][(_side == ORDER_SIDE.BUY ? ORDER_SIDE.SELL : ORDER_SIDE.BUY)];
+            require(orders.length > 0, "Empty Order Book!");
+        }
         _;
     }
 }
