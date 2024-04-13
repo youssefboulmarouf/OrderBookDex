@@ -1,34 +1,31 @@
-.place-order {
-    height: 60vh;
+
+.place-orders {
+    padding: 5px;
+    height: 30vh;
 }
 
-.transparent-dropdown .dropdown-toggle {
-    background-color: rgba(255, 255, 255, 0.5);
+.market-dropdown .market-dropdown-toggle {
+    background-color: rgba(255, 255, 255, 0.829);
     border: none;
     color: #000;
     width: 100%;
-    margin-top: 5px;
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
 }
 
-.transparent-dropdown .dropdown-menu {
-    background-color: rgba(255, 255, 255, 0.5);
+.market-dropdown .market-dropdown-menu {
+    background-color: rgba(255, 255, 255, 0.829);
     border: none;
     width: 100%;
 }
 
-.transparent-dropdown .dropdown-menu .dropdown-item:hover {
-    background-color: rgba(255, 255, 255, 0.7);
+.market-dropdown .market-dropdown-menu .market-dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.829);
 }
 
-.transparent-dropdown .dropdown-toggle::after {
+.market-dropdown .market-dropdown-toggle::after {
     margin-top: 10px;
-}
-
-.markets-dorpdown {
-    margin-bottom: 25px;
 }
 
 .dropdown-toggle-left-side {
@@ -39,4 +36,54 @@
 .dropdown-toggle-right-side {
     text-align: right;
     margin-right: 10px;
+}
+
+.custom-input-group {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    /* margin-top: 5px; */
+}
+
+.custom-input-group .form-control {
+    padding-left: 80px;
+    padding-right: 80px;
+    text-align: right;
+}
+
+.custom-placeholder, .input-addon {
+    position: absolute;
+    pointer-events: none;
+    color: #6c757d;
+}
+
+.custom-placeholder {
+    left: 10px;
+}
+
+.input-addon {
+    right: 10px;
+    margin-top: 1.5rem;
+    transform: translateY(-50%);
+}
+
+
+.place-order-button {
+    width: 100% !important;
+    border-radius: 10px;
+}
+
+.button-group {
+    margin-bottom: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+.button {
+    width: 50%;
 }

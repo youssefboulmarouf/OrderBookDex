@@ -7,15 +7,16 @@ import Form from 'react-bootstrap/Form';
 import './place-order.css';
 import { ethers } from 'ethers';
 import { useAppContext } from '../../AppContext';
+import { Col, Row } from 'react-bootstrap';
 
 interface PlaceOrderProps {
     setAssetToken: (assetToken: TokenProps) => void;
+    setBuySellButton: (buySellButton: string) => void;
 }
 
 const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
-    const { tokens, selectedAsset, orderBookDexContract, triggerRefresh } = useAppContext();
+    const { tokens, selectedAsset, orderBookDexContract, buySellButton, marketPrice, triggerRefresh } = useAppContext();
 
-    const [buySellButton, setBuySellButton] = useState('buy');
     const [limitMarketButton, setLimitMarketButton] = useState('limit');
     const [price, setPrice] = useState<number>(0);
     const [amount, setAmount] = useState<number>(0);
@@ -35,8 +36,18 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
         }
     };
 
-    const conputeTotal = () => {
-        setTotal(+price * +amount)
+    const handleBuySellButtonChange = (buttonState: string) => {
+        props.setBuySellButton(buttonState)
+    }
+
+    const handleLimitMarketButtonChange = (buttonState: string) => {
+        setLimitMarketButton(buttonState)
+
+        if (buttonState == 'market') {
+            setPrice(+ethers.formatEther(marketPrice.toString()))
+        } else {
+            setPrice(0)
+        }
     }
 
     const createOrder = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -44,7 +55,7 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
         await orderBookDexContract.placedOrder(
             selectedAsset, 
             amount, 
-            price, 
+            price,
             buySellButton === 'buy' ? ORDER_SIDE.BUY : ORDER_SIDE.SELL,
             limitMarketButton === 'limit' ? ORDER_TYPE.LIMIT : ORDER_TYPE.MARKET
         )
@@ -52,13 +63,18 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
     }
 
     useEffect(() => {
-        conputeTotal();
+        setTotal(+price * +amount);
     }, [amount, price]);
 
+    useEffect(() => {
+        if (limitMarketButton == 'market') {
+            setPrice(+ethers.formatEther(marketPrice.toString()))
+        }
+    }, [marketPrice]);
+
     return (
-        <div className="default-box-layout place-order">
-            <div className='title-box'>MARKET</div>
-            <div className='inner-box'>
+        <div className='custom-box'>
+            <div className='place-orders'>
                 <MarketDropDown 
                     tokens={tokens}
                     assetToken={selectedAsset}
@@ -67,51 +83,55 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
 
                 <ButtonGroup className='button-group'>
                     <Button className='button'
-                        variant={buySellButton === 'buy' ? 'success' : ''} 
-                        onClick={() => setBuySellButton('buy')}
-                    >BUY</Button>
+                            variant={limitMarketButton === 'limit' ? 'info' : 'accent3'}
+                            onClick={() => handleLimitMarketButtonChange('limit')}
+                            >Limit</Button>
                     
                     <Button className='button'
-                        variant={buySellButton === 'sell' ? 'danger' : ''} 
-                        onClick={() => setBuySellButton('sell')}
-                    >SELL</Button>
+                        variant={limitMarketButton === 'market' ? 'info' : 'accent3'}
+                        onClick={() => handleLimitMarketButtonChange('market')}
+                    >Market</Button>
                 </ButtonGroup>
 
                 <ButtonGroup className='button-group'>
                     <Button className='button'
-                        variant={limitMarketButton === 'limit' ? 'dark' : ''}
-                        onClick={() => setLimitMarketButton('limit')}
-                    >Limit</Button>
+                        variant={buySellButton === 'buy' ? 'success' : 'accent3'} 
+                        onClick={() => handleBuySellButtonChange('buy')}
+                    ><strong>BUY</strong></Button>
+                    
                     <Button className='button'
-                        variant={limitMarketButton === 'market' ? 'dark' : ''}
-                        onClick={() => setLimitMarketButton('market')}
-                    >Market</Button>
-                </ButtonGroup>
+                        variant={buySellButton === 'sell' ? 'danger' : 'accent3'} 
+                        onClick={() => handleBuySellButtonChange('sell')}
+                    ><strong>SELL</strong></Button>
+                </ButtonGroup>                
 
                 <Form onSubmit={createOrder}>
-                    <Form.Group className="mb-3 custom-input-group">
+                    <Form.Group className="custom-input-group">
                         <div className="input-wrapper">
                             <span className="custom-placeholder">Price</span>
                             <Form.Control 
                                 value={price}
+                                type='number'
                                 onChange={handlePriceChange}
+                                disabled={limitMarketButton == 'market'}
                             />
                             <span className="input-addon">DAI</span>
                         </div>
                     </Form.Group>
 
-                    <Form.Group className="mb-3 custom-input-group">
+                    <Form.Group className="custom-input-group">
                         <div className="input-wrapper">
                             <span className="custom-placeholder">Amount</span>
                             <Form.Control 
                                 value={amount}
+                                type='number'
                                 onChange={handleAmountChange}
                             />
                             <span className="input-addon">{ethers.decodeBytes32String(selectedAsset.ticker)}</span>
                         </div>
                     </Form.Group>
 
-                    <Form.Group className="mb-3 custom-input-group">
+                    <Form.Group className="custom-input-group">
                         <div className="input-wrapper">
                             <span className="custom-placeholder">Total</span>
                             <Form.Control disabled value={total}/>
@@ -121,7 +141,7 @@ const PlaceOrder: React.FC<PlaceOrderProps> = (props) => {
 
                     <Button 
                         className='place-order-button button' 
-                        variant='primary' 
+                        variant='info' 
                         type='submit'
                     >
                         Place Order
