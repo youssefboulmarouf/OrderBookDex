@@ -6,16 +6,14 @@ import { TokenProps } from '../common/common-props';
 import { AppProvider } from '../../AppContext';
 import DexTrades from '../dex-trades/DexTrades';
 
-import { Col, Container, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 
 import './obdex.css';
-import TraderTrades from '../trader/TraderTrades';
-import TraderOrders from '../trader/TraderOrders';
 import OrderBook from '../order-book/OrderBook';
-import Market from '../market/Market';
 import UserOrdersTrades from '../trader/UserOrdersTrades';
 import PlaceOrder from '../place-order/PlaceOrder';
 import UserWallet from '../wallet/UserWallet';
+import Chart from '../chart/Chart';
 
 interface OrderBookDexProps {
     provider: ethers.BrowserProvider;
@@ -72,9 +70,7 @@ const OrderBookDex: React.FC<OrderBookDexProps> = (props) => {
                     </Col>
                     <Col sm={12} md={6} lg={6}>
                         <Row>
-                            <div className=''>
-                                <div className='custom-box middle-box'><div className='dex-chart'>CHART</div></div>
-                            </div>
+                            <Chart/>
                         </Row>
                     </Col>
                     <Col sm={12} md={3} lg={3}>
